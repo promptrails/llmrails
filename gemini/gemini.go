@@ -238,11 +238,15 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest) ([]byte, erro
 		}
 	}
 
-	if req.Temperature != nil || req.MaxTokens != nil || req.TopP != nil || req.OutputSchema != nil {
+	needsConfig := req.Temperature != nil || req.MaxTokens != nil || req.TopP != nil ||
+		req.TopK != nil || len(req.Stop) > 0 || req.OutputSchema != nil
+	if needsConfig {
 		r.GenerationConfig = &generationConfig{
-			Temperature: req.Temperature,
-			MaxTokens:   req.MaxTokens,
-			TopP:        req.TopP,
+			Temperature:   req.Temperature,
+			MaxTokens:     req.MaxTokens,
+			TopP:          req.TopP,
+			TopK:          req.TopK,
+			StopSequences: req.Stop,
 		}
 	}
 

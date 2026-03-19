@@ -243,6 +243,31 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) 
 	if req.TopP != nil {
 		oaiReq.TopP = req.TopP
 	}
+	if req.FrequencyPenalty != nil {
+		oaiReq.FrequencyPenalty = req.FrequencyPenalty
+	}
+	if req.PresencePenalty != nil {
+		oaiReq.PresencePenalty = req.PresencePenalty
+	}
+	if len(req.Stop) > 0 {
+		oaiReq.Stop = req.Stop
+	}
+	if req.Seed != nil {
+		oaiReq.Seed = req.Seed
+	}
+
+	// Reasoning/thinking mode for o-series models
+	if req.Thinking {
+		effort := "medium"
+		if req.ThinkingBudget != nil {
+			if *req.ThinkingBudget <= 1024 {
+				effort = "low"
+			} else if *req.ThinkingBudget >= 16384 {
+				effort = "high"
+			}
+		}
+		oaiReq.Reasoning = &reasoningParam{Effort: effort}
+	}
 
 	if len(req.Tools) > 0 {
 		oaiReq.Tools = convertTools(req.Tools)

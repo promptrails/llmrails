@@ -254,6 +254,21 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) 
 	if req.TopP != nil {
 		r.TopP = req.TopP
 	}
+	if req.TopK != nil {
+		r.TopK = req.TopK
+	}
+	if len(req.Stop) > 0 {
+		r.Stop = req.Stop
+	}
+
+	// Extended thinking
+	if req.Thinking {
+		budget := 10000 // default
+		if req.ThinkingBudget != nil {
+			budget = *req.ThinkingBudget
+		}
+		r.Thinking = &thinking{Type: "enabled", BudgetTokens: budget}
+	}
 
 	if len(req.Tools) > 0 {
 		r.Tools = convertTools(req.Tools)
@@ -285,6 +300,8 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 
 	for _, block := range resp.Content {
 		switch block.Type {
+		case "thinking":
+			result.Thinking += block.Text
 		case "text":
 			result.Content += block.Text
 		case "tool_use":

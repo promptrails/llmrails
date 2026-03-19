@@ -11,9 +11,17 @@ type request struct {
 	MaxTokens   int         `json:"max_tokens"`
 	Temperature *float64    `json:"temperature,omitempty"`
 	TopP        *float64    `json:"top_p,omitempty"`
+	TopK        *int        `json:"top_k,omitempty"`
+	Stop        []string    `json:"stop_sequences,omitempty"`
 	Stream      bool        `json:"stream"`
 	Tools       []tool      `json:"tools,omitempty"`
 	ToolChoice  *toolChoice `json:"tool_choice,omitempty"`
+	Thinking    *thinking   `json:"thinking,omitempty"`
+}
+
+type thinking struct {
+	Type         string `json:"type"`
+	BudgetTokens int    `json:"budget_tokens"`
 }
 
 type toolChoice struct {

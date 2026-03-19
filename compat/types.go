@@ -5,14 +5,23 @@ import "encoding/json"
 // Request types
 
 type request struct {
-	Model          string          `json:"model"`
-	Messages       []message       `json:"messages"`
-	Temperature    *float64        `json:"temperature,omitempty"`
-	MaxTokens      *int            `json:"max_tokens,omitempty"`
-	TopP           *float64        `json:"top_p,omitempty"`
-	Stream         bool            `json:"stream"`
-	Tools          []tool          `json:"tools,omitempty"`
-	ResponseFormat *responseFormat `json:"response_format,omitempty"`
+	Model            string          `json:"model"`
+	Messages         []message       `json:"messages"`
+	Temperature      *float64        `json:"temperature,omitempty"`
+	MaxTokens        *int            `json:"max_tokens,omitempty"`
+	TopP             *float64        `json:"top_p,omitempty"`
+	FrequencyPenalty *float64        `json:"frequency_penalty,omitempty"`
+	PresencePenalty  *float64        `json:"presence_penalty,omitempty"`
+	Stop             []string        `json:"stop,omitempty"`
+	Seed             *int            `json:"seed,omitempty"`
+	Stream           bool            `json:"stream"`
+	Tools            []tool          `json:"tools,omitempty"`
+	ResponseFormat   *responseFormat `json:"response_format,omitempty"`
+	Reasoning        *reasoningParam `json:"reasoning,omitempty"`
+}
+
+type reasoningParam struct {
+	Effort string `json:"effort"`
 }
 
 type message struct {

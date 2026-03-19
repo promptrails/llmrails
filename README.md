@@ -38,7 +38,8 @@ go get github.com/promptrails/unillm
 | | |
 |---|---|
 | [Getting Started](docs/getting-started.md) | Installation, first request, error handling |
-| [Providers](docs/providers.md) | All 11 providers, feature matrix, config |
+| [Providers](docs/providers.md) | All 11 providers, config examples |
+| [Parameters & Feature Matrix](docs/parameters.md) | All parameters, provider support matrix |
 | [Streaming](docs/streaming.md) | Real-time token streaming |
 | [Tool Calling](docs/tool-calling.md) | Function calling + automatic tool loop |
 | [Chain](docs/chain.md) | Sequential prompt pipelines |

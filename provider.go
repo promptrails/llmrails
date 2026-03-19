@@ -40,6 +40,26 @@ type CompletionRequest struct {
 	// nil means the provider's default is used.
 	TopP *float64
 
+	// TopK limits the number of tokens considered at each step.
+	// Supported by Anthropic and Gemini. Ignored by OpenAI-compatible providers.
+	TopK *int
+
+	// FrequencyPenalty penalizes tokens based on their frequency in the output so far.
+	// Range is typically -2 to 2. Supported by OpenAI-compatible providers.
+	FrequencyPenalty *float64
+
+	// PresencePenalty penalizes tokens based on whether they appear in the output so far.
+	// Range is typically -2 to 2. Supported by OpenAI-compatible providers.
+	PresencePenalty *float64
+
+	// Stop is a list of sequences where the model should stop generating.
+	// The model will stop at the first occurrence of any stop sequence.
+	Stop []string
+
+	// Seed enables deterministic output when supported by the provider.
+	// Same seed + same request = same output (best effort).
+	Seed *int
+
 	// Tools defines the functions/tools available for the model to call.
 	// Not all providers support tool calling.
 	Tools []ToolDefinition
@@ -48,12 +68,26 @@ type CompletionRequest struct {
 	// When set, the provider will attempt to constrain the output to match
 	// this schema. Support varies by provider.
 	OutputSchema *[]byte
+
+	// Thinking enables extended thinking / chain-of-thought mode.
+	// When true, Anthropic returns thinking blocks, and OpenAI uses
+	// reasoning effort for o-series models.
+	Thinking bool
+
+	// ThinkingBudget limits the number of thinking tokens (Anthropic only).
+	// Ignored when Thinking is false.
+	ThinkingBudget *int
 }
 
 // CompletionResponse represents the response from an LLM provider.
 type CompletionResponse struct {
 	// Content is the generated text content.
 	Content string
+
+	// Thinking contains the model's internal reasoning when Thinking mode
+	// is enabled. Only populated by providers that support extended thinking
+	// (e.g., Anthropic).
+	Thinking string
 
 	// ToolCalls contains any tool/function calls the model wants to make.
 	// When non-empty, the caller should execute the tools and send the
