@@ -21,7 +21,7 @@ linters-settings:
   gofmt:
     simplify: true
   goimports:
-    local-prefixes: github.com/promptrails/unillm
+    local-prefixes: github.com/promptrails/llmrails
   revive:
     rules:
       - name: exported

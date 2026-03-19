@@ -24,10 +24,10 @@ schema := []byte(`{
     "required": ["sentiment", "confidence", "summary"]
 }`)
 
-resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:        "gpt-4o",
     SystemPrompt: "Analyze the sentiment of the given text.",
-    Messages:     []unillm.Message{{Role: "user", Content: "I love this product!"}},
+    Messages:     []llmrails.Message{{Role: "user", Content: "I love this product!"}},
     OutputSchema: &schema,
 })
 

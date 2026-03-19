@@ -5,37 +5,37 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/promptrails/unillm"
+	"github.com/promptrails/llmrails"
 )
 
 type mockProvider struct {
 	calls     int
-	responses []*unillm.CompletionResponse
+	responses []*llmrails.CompletionResponse
 }
 
-func (m *mockProvider) Complete(_ context.Context, _ *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (m *mockProvider) Complete(_ context.Context, _ *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	idx := m.calls
 	m.calls++
 	if idx < len(m.responses) {
 		return m.responses[idx], nil
 	}
-	return &unillm.CompletionResponse{Content: "done"}, nil
+	return &llmrails.CompletionResponse{Content: "done"}, nil
 }
 
-func (m *mockProvider) Stream(_ context.Context, _ *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (m *mockProvider) Stream(_ context.Context, _ *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	return nil, nil
 }
 
 func TestRunLoop_NoTools(t *testing.T) {
 	provider := &mockProvider{
-		responses: []*unillm.CompletionResponse{
-			{Content: "Hello!", Usage: unillm.TokenUsage{TotalTokens: 10}},
+		responses: []*llmrails.CompletionResponse{
+			{Content: "Hello!", Usage: llmrails.TokenUsage{TotalTokens: 10}},
 		},
 	}
 
-	result, err := RunLoop(context.Background(), provider, &unillm.CompletionRequest{
+	result, err := RunLoop(context.Background(), provider, &llmrails.CompletionRequest{
 		Model:    "test",
-		Messages: []unillm.Message{{Role: "user", Content: "Hi"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
 	}, NewMap(nil))
 
 	if err != nil {
@@ -51,16 +51,16 @@ func TestRunLoop_NoTools(t *testing.T) {
 
 func TestRunLoop_SingleToolCall(t *testing.T) {
 	provider := &mockProvider{
-		responses: []*unillm.CompletionResponse{
+		responses: []*llmrails.CompletionResponse{
 			{
-				ToolCalls: []unillm.ToolCall{
+				ToolCalls: []llmrails.ToolCall{
 					{ID: "call_1", Name: "get_weather", Arguments: `{"city":"Istanbul"}`},
 				},
-				Usage: unillm.TokenUsage{PromptTokens: 10, CompletionTokens: 5, TotalTokens: 15},
+				Usage: llmrails.TokenUsage{PromptTokens: 10, CompletionTokens: 5, TotalTokens: 15},
 			},
 			{
 				Content: "It's 22°C in Istanbul.",
-				Usage:   unillm.TokenUsage{PromptTokens: 20, CompletionTokens: 10, TotalTokens: 30},
+				Usage:   llmrails.TokenUsage{PromptTokens: 20, CompletionTokens: 10, TotalTokens: 30},
 			},
 		},
 	}
@@ -76,9 +76,9 @@ func TestRunLoop_SingleToolCall(t *testing.T) {
 		},
 	})
 
-	result, err := RunLoop(context.Background(), provider, &unillm.CompletionRequest{
+	result, err := RunLoop(context.Background(), provider, &llmrails.CompletionRequest{
 		Model:    "test",
-		Messages: []unillm.Message{{Role: "user", Content: "Weather in Istanbul?"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "Weather in Istanbul?"}},
 	}, executor)
 
 	if err != nil {
@@ -98,11 +98,11 @@ func TestRunLoop_SingleToolCall(t *testing.T) {
 func TestRunLoop_MaxIterations(t *testing.T) {
 	// Provider always returns tool calls — should hit max iterations
 	provider := &mockProvider{
-		responses: make([]*unillm.CompletionResponse, 10),
+		responses: make([]*llmrails.CompletionResponse, 10),
 	}
 	for i := range provider.responses {
-		provider.responses[i] = &unillm.CompletionResponse{
-			ToolCalls: []unillm.ToolCall{
+		provider.responses[i] = &llmrails.CompletionResponse{
+			ToolCalls: []llmrails.ToolCall{
 				{ID: "call", Name: "loop_tool", Arguments: "{}"},
 			},
 		}
@@ -114,9 +114,9 @@ func TestRunLoop_MaxIterations(t *testing.T) {
 		},
 	})
 
-	_, err := RunLoop(context.Background(), provider, &unillm.CompletionRequest{
+	_, err := RunLoop(context.Background(), provider, &llmrails.CompletionRequest{
 		Model:    "test",
-		Messages: []unillm.Message{{Role: "user", Content: "loop"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "loop"}},
 	}, executor, WithMaxIterations(3))
 
 	if err == nil {
@@ -126,8 +126,8 @@ func TestRunLoop_MaxIterations(t *testing.T) {
 
 func TestRunLoop_ToolCallHook(t *testing.T) {
 	provider := &mockProvider{
-		responses: []*unillm.CompletionResponse{
-			{ToolCalls: []unillm.ToolCall{{ID: "c1", Name: "test_tool", Arguments: `{}`}}},
+		responses: []*llmrails.CompletionResponse{
+			{ToolCalls: []llmrails.ToolCall{{ID: "c1", Name: "test_tool", Arguments: `{}`}}},
 			{Content: "done"},
 		},
 	}
@@ -139,10 +139,10 @@ func TestRunLoop_ToolCallHook(t *testing.T) {
 		},
 	})
 
-	_, err := RunLoop(context.Background(), provider, &unillm.CompletionRequest{
+	_, err := RunLoop(context.Background(), provider, &llmrails.CompletionRequest{
 		Model:    "test",
-		Messages: []unillm.Message{{Role: "user", Content: "test"}},
-	}, executor, WithToolCallHook(func(call unillm.ToolCall, result string, err error) {
+		Messages: []llmrails.Message{{Role: "user", Content: "test"}},
+	}, executor, WithToolCallHook(func(call llmrails.ToolCall, result string, err error) {
 		hookCalled = true
 		if call.Name != "test_tool" {
 			t.Errorf("expected tool 'test_tool', got %q", call.Name)

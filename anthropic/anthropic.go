@@ -1,4 +1,4 @@
-// Package anthropic provides an Anthropic (Claude) LLM provider for unillm.
+// Package anthropic provides an Anthropic (Claude) LLM provider for llmrails.
 //
 // It supports all Claude models including Claude Sonnet, Opus, and Haiku.
 // Features include streaming, tool/function calling, and vision.
@@ -12,9 +12,9 @@
 // # Usage
 //
 //	provider := anthropic.New("sk-ant-...")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "claude-sonnet-4-20250514",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package anthropic
 
@@ -26,8 +26,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/internal/sse"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/internal/sse"
 )
 
 const (
@@ -36,7 +36,7 @@ const (
 	apiVersion       = "2023-06-01"
 )
 
-// Provider implements unillm.Provider for Anthropic's Messages API.
+// Provider implements llmrails.Provider for Anthropic's Messages API.
 type Provider struct {
 	apiKey  string
 	baseURL string
@@ -74,7 +74,7 @@ func New(apiKey string, opts ...Option) *Provider {
 }
 
 // Complete sends a non-streaming completion request.
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	body, err := p.buildRequestBody(req, false)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) 
 }
 
 // Stream sends a streaming completion request and returns a channel of events.
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	body, err := p.buildRequestBody(req, true)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<
 		return nil, err
 	}
 
-	ch := make(chan unillm.StreamEvent, 64)
+	ch := make(chan llmrails.StreamEvent, 64)
 	go p.readStream(respBody, ch)
 	return ch, nil
 }
@@ -141,7 +141,7 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 			msg = errResp.Error.Message
 		}
 
-		return nil, &unillm.APIError{
+		return nil, &llmrails.APIError{
 			StatusCode: resp.StatusCode,
 			Message:    msg,
 			Provider:   "anthropic",
@@ -151,12 +151,12 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 	return resp.Body, nil
 }
 
-func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) {
+func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent) {
 	defer close(ch)
 	defer body.Close()
 
 	reader := sse.NewReader(body)
-	var pendingToolCalls []unillm.ToolCall
+	var pendingToolCalls []llmrails.ToolCall
 	var currentToolIndex int = -1
 
 	for {
@@ -174,7 +174,7 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		case "content_block_start":
 			if se.ContentBlock != nil && se.ContentBlock.Type == "tool_use" {
 				currentToolIndex++
-				pendingToolCalls = append(pendingToolCalls, unillm.ToolCall{
+				pendingToolCalls = append(pendingToolCalls, llmrails.ToolCall{
 					ID:   se.ContentBlock.ID,
 					Name: se.ContentBlock.Name,
 				})
@@ -187,8 +187,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 			switch se.Delta.Type {
 			case "text_delta":
 				if se.Delta.Text != "" {
-					ch <- unillm.StreamEvent{
-						Type:    unillm.EventContent,
+					ch <- llmrails.StreamEvent{
+						Type:    llmrails.EventContent,
 						Content: se.Delta.Text,
 					}
 				}
@@ -200,8 +200,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 
 		case "message_delta":
 			if se.Usage != nil {
-				ch <- unillm.StreamEvent{
-					Usage: &unillm.TokenUsage{
+				ch <- llmrails.StreamEvent{
+					Usage: &llmrails.TokenUsage{
 						PromptTokens:     se.Usage.InputTokens,
 						CompletionTokens: se.Usage.OutputTokens,
 						TotalTokens:      se.Usage.InputTokens + se.Usage.OutputTokens,
@@ -211,28 +211,28 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 
 		case "message_stop":
 			for i := range pendingToolCalls {
-				ch <- unillm.StreamEvent{
-					Type:     unillm.EventToolCall,
+				ch <- llmrails.StreamEvent{
+					Type:     llmrails.EventToolCall,
 					ToolCall: &pendingToolCalls[i],
 				}
 			}
-			ch <- unillm.StreamEvent{Type: unillm.EventDone}
+			ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
 			return
 		}
 	}
 
 	if err := reader.Err(); err != nil {
-		ch <- unillm.StreamEvent{
-			Type:  unillm.EventError,
+		ch <- llmrails.StreamEvent{
+			Type:  llmrails.EventError,
 			Error: fmt.Errorf("anthropic: stream read error: %w", err),
 		}
 		return
 	}
 
-	ch <- unillm.StreamEvent{Type: unillm.EventDone}
+	ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
 }
 
-func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) ([]byte, error) {
+func (p *Provider) buildRequestBody(req *llmrails.CompletionRequest, stream bool) ([]byte, error) {
 	maxTokens := defaultMaxTokens
 	if req.MaxTokens != nil {
 		maxTokens = *req.MaxTokens
@@ -287,11 +287,11 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) 
 	return json.Marshal(r)
 }
 
-func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
-	result := &unillm.CompletionResponse{
+func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
+	result := &llmrails.CompletionResponse{
 		Model:        resp.Model,
 		FinishReason: resp.StopReason,
-		Usage: unillm.TokenUsage{
+		Usage: llmrails.TokenUsage{
 			PromptTokens:     resp.Usage.InputTokens,
 			CompletionTokens: resp.Usage.OutputTokens,
 			TotalTokens:      resp.Usage.InputTokens + resp.Usage.OutputTokens,
@@ -311,7 +311,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 				result.Content = string(args)
 				continue
 			}
-			result.ToolCalls = append(result.ToolCalls, unillm.ToolCall{
+			result.ToolCalls = append(result.ToolCalls, llmrails.ToolCall{
 				ID:        block.ID,
 				Name:      block.Name,
 				Arguments: string(args),
@@ -322,7 +322,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 	return result
 }
 
-func convertMessages(req *unillm.CompletionRequest) []message {
+func convertMessages(req *llmrails.CompletionRequest) []message {
 	var msgs []message
 
 	for _, m := range req.Messages {
@@ -376,7 +376,7 @@ func convertMessages(req *unillm.CompletionRequest) []message {
 	return msgs
 }
 
-func convertTools(tools []unillm.ToolDefinition) []tool {
+func convertTools(tools []llmrails.ToolDefinition) []tool {
 	result := make([]tool, len(tools))
 	for i, t := range tools {
 		result[i] = tool{

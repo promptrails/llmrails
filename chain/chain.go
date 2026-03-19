@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/promptrails/unillm"
+	"github.com/promptrails/llmrails"
 )
 
 // Step defines a single step in a chain.
@@ -37,7 +37,7 @@ type Step struct {
 
 	// Provider overrides the chain's default provider for this step.
 	// If nil, the chain's provider is used.
-	Provider unillm.Provider
+	Provider llmrails.Provider
 
 	// Temperature overrides for this step.
 	Temperature *float64
@@ -59,7 +59,7 @@ type Step struct {
 // Chain executes a sequence of LLM calls where each step's output
 // feeds into the next step's input.
 type Chain struct {
-	provider unillm.Provider
+	provider llmrails.Provider
 	model    string
 	steps    []Step
 }
@@ -75,7 +75,7 @@ func WithModel(model string) Option {
 }
 
 // New creates a new chain with the given provider and steps.
-func New(provider unillm.Provider, steps []Step, opts ...Option) *Chain {
+func New(provider llmrails.Provider, steps []Step, opts ...Option) *Chain {
 	c := &Chain{
 		provider: provider,
 		steps:    steps,
@@ -92,7 +92,7 @@ type StepResult struct {
 	Output string
 
 	// Usage is the token usage for this step.
-	Usage unillm.TokenUsage
+	Usage llmrails.TokenUsage
 
 	// Model is the model used for this step.
 	Model string
@@ -107,7 +107,7 @@ type Result struct {
 	Steps []StepResult
 
 	// TotalUsage is the accumulated token usage across all steps.
-	TotalUsage unillm.TokenUsage
+	TotalUsage llmrails.TokenUsage
 }
 
 // Run executes the chain with the given initial input.
@@ -137,10 +137,10 @@ func (c *Chain) Run(ctx context.Context, input string) (*Result, error) {
 			userContent = strings.ReplaceAll(step.InputTemplate, "{input}", currentInput)
 		}
 
-		req := &unillm.CompletionRequest{
+		req := &llmrails.CompletionRequest{
 			Model:        model,
 			SystemPrompt: step.SystemPrompt,
-			Messages: []unillm.Message{
+			Messages: []llmrails.Message{
 				{Role: "user", Content: userContent},
 			},
 			Temperature: step.Temperature,

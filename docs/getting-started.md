@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-go get github.com/promptrails/unillm
+go get github.com/promptrails/llmrails
 ```
 
 Requires Go 1.22 or later. No external dependencies — only Go standard library.
@@ -18,8 +18,8 @@ import (
     "fmt"
     "log"
 
-    "github.com/promptrails/unillm"
-    "github.com/promptrails/unillm/openai"
+    "github.com/promptrails/llmrails"
+    "github.com/promptrails/llmrails/openai"
 )
 
 func main() {
@@ -27,10 +27,10 @@ func main() {
     provider := openai.New("sk-your-api-key")
 
     // Send a completion request
-    resp, err := provider.Complete(context.Background(), &unillm.CompletionRequest{
+    resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
         Model:        "gpt-4o",
         SystemPrompt: "You are a helpful assistant.",
-        Messages: []unillm.Message{
+        Messages: []llmrails.Message{
             {Role: "user", Content: "What is Go?"},
         },
     })
@@ -45,19 +45,19 @@ func main() {
 
 ## Switching Providers
 
-Every provider implements the same `unillm.Provider` interface. To switch from OpenAI to Anthropic, just change the import and constructor:
+Every provider implements the same `llmrails.Provider` interface. To switch from OpenAI to Anthropic, just change the import and constructor:
 
 ```go
 // Before
-import "github.com/promptrails/unillm/openai"
+import "github.com/promptrails/llmrails/openai"
 provider := openai.New("sk-...")
 
 // After
-import "github.com/promptrails/unillm/anthropic"
+import "github.com/promptrails/llmrails/anthropic"
 provider := anthropic.New("sk-ant-...")
 ```
 
-Your `CompletionRequest` stays the same. unillm handles the API differences internally.
+Your `CompletionRequest` stays the same. llmrails handles the API differences internally.
 
 ## Request Parameters
 
@@ -65,10 +65,10 @@ Your `CompletionRequest` stays the same. unillm handles the API differences inte
 temp := 0.7
 maxTokens := 1000
 
-req := &unillm.CompletionRequest{
+req := &llmrails.CompletionRequest{
     Model:        "gpt-4o",
     SystemPrompt: "You are a helpful assistant.",
-    Messages: []unillm.Message{
+    Messages: []llmrails.Message{
         {Role: "user", Content: "Explain quantum computing"},
     },
     Temperature: &temp,      // Optional: 0-2 range
@@ -90,12 +90,12 @@ resp.Model         // Actual model used
 
 ## Error Handling
 
-All providers return `*unillm.APIError` for HTTP errors:
+All providers return `*llmrails.APIError` for HTTP errors:
 
 ```go
 resp, err := provider.Complete(ctx, req)
 if err != nil {
-    var apiErr *unillm.APIError
+    var apiErr *llmrails.APIError
     if errors.As(err, &apiErr) {
         fmt.Printf("Provider: %s\n", apiErr.Provider)
         fmt.Printf("Status: %d\n", apiErr.StatusCode)

@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/promptrails/unillm"
+	"github.com/promptrails/llmrails"
 )
 
 func TestProvider_Complete(t *testing.T) {
@@ -51,10 +51,10 @@ func TestProvider_Complete(t *testing.T) {
 		APIKey:  "test-key",
 	})
 
-	resp, err := provider.Complete(context.Background(), &unillm.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
 		Model:        "gpt-4o",
 		SystemPrompt: "You are helpful.",
-		Messages:     []unillm.Message{{Role: "user", Content: "Hi"}},
+		Messages:     []llmrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -107,10 +107,10 @@ func TestProvider_Complete_WithTools(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
 
-	resp, err := provider.Complete(context.Background(), &unillm.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []unillm.Message{{Role: "user", Content: "What's the weather in Istanbul?"}},
-		Tools: []unillm.ToolDefinition{{
+		Messages: []llmrails.Message{{Role: "user", Content: "What's the weather in Istanbul?"}},
+		Tools: []llmrails.ToolDefinition{{
 			Name:        "get_weather",
 			Description: "Get current weather",
 			Parameters:  json.RawMessage(`{"type":"object","properties":{"city":{"type":"string"}}}`),
@@ -146,15 +146,15 @@ func TestProvider_Complete_APIError(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "bad-key"})
 
-	_, err := provider.Complete(context.Background(), &unillm.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []unillm.Message{{Role: "user", Content: "Hi"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err == nil {
 		t.Fatal("expected error")
 	}
 
-	apiErr, ok := err.(*unillm.APIError)
+	apiErr, ok := err.(*llmrails.APIError)
 	if !ok {
 		t.Fatalf("expected APIError, got %T", err)
 	}
@@ -188,9 +188,9 @@ func TestProvider_Stream(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
 
-	ch, err := provider.Stream(context.Background(), &unillm.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []unillm.Message{{Role: "user", Content: "Hi"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -200,11 +200,11 @@ func TestProvider_Stream(t *testing.T) {
 	var gotDone bool
 	for event := range ch {
 		switch event.Type {
-		case unillm.EventContent:
+		case llmrails.EventContent:
 			content += event.Content
-		case unillm.EventDone:
+		case llmrails.EventDone:
 			gotDone = true
-		case unillm.EventError:
+		case llmrails.EventError:
 			t.Fatalf("unexpected error event: %v", event.Error)
 		}
 	}
@@ -234,9 +234,9 @@ func TestProvider_ExtraHeaders(t *testing.T) {
 		ExtraHeaders: map[string]string{"X-Custom": "value"},
 	})
 
-	_, err := provider.Complete(context.Background(), &unillm.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
 		Model:    "test",
-		Messages: []unillm.Message{{Role: "user", Content: "Hi"}},
+		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -1,13 +1,13 @@
-// Package together provides a Together AI LLM provider for unillm.
+// Package together provides a Together AI LLM provider for llmrails.
 //
 // Together AI exposes an OpenAI-compatible API.
 //
 // # Usage
 //
 //	provider := together.New("your-api-key")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package together
 
@@ -15,13 +15,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/compat"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/compat"
 )
 
 const defaultBaseURL = "https://api.together.xyz/v1/chat/completions"
 
-// Provider implements unillm.Provider for Together AI's API.
+// Provider implements llmrails.Provider for Together AI's API.
 type Provider struct{ inner *compat.Provider }
 
 // Option configures the provider.
@@ -44,10 +44,10 @@ func New(apiKey string, opts ...Option) *Provider {
 	return &Provider{inner: compat.New(cfg)}
 }
 
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

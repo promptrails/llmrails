@@ -1,4 +1,4 @@
-package unillm
+package llmrails
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func WithBaseDelay(d time.Duration) RetryOption {
 //
 // Example:
 //
-//	provider := unillm.WithRetry(openai.New("sk-..."), 3)
+//	provider := llmrails.WithRetry(openai.New("sk-..."), 3)
 func WithRetry(provider Provider, maxRetries int, opts ...RetryOption) *RetryProvider {
 	r := &RetryProvider{
 		inner:      provider,

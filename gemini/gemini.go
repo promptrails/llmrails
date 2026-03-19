@@ -1,4 +1,4 @@
-// Package gemini provides a Google Gemini LLM provider for unillm.
+// Package gemini provides a Google Gemini LLM provider for llmrails.
 //
 // It supports Gemini models including Gemini 2.0 Flash, Gemini 1.5 Pro,
 // and Gemini 1.5 Flash. Features include streaming, tool/function calling,
@@ -14,9 +14,9 @@
 // # Usage
 //
 //	provider := gemini.New("your-api-key")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "gemini-2.0-flash",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package gemini
 
@@ -28,15 +28,15 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/internal/sse"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/internal/sse"
 )
 
 const (
 	defaultBaseURL = "https://generativelanguage.googleapis.com/v1beta/models"
 )
 
-// Provider implements unillm.Provider for Google's Gemini API.
+// Provider implements llmrails.Provider for Google's Gemini API.
 type Provider struct {
 	apiKey  string
 	baseURL string
@@ -74,7 +74,7 @@ func New(apiKey string, opts ...Option) *Provider {
 }
 
 // Complete sends a non-streaming completion request.
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	body, err := p.buildRequestBody(req)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) 
 }
 
 // Stream sends a streaming completion request and returns a channel of events.
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	body, err := p.buildRequestBody(req)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<
 		return nil, err
 	}
 
-	ch := make(chan unillm.StreamEvent, 64)
+	ch := make(chan llmrails.StreamEvent, 64)
 	go p.readStream(respBody, ch)
 	return ch, nil
 }
@@ -143,7 +143,7 @@ func (p *Provider) doRequest(ctx context.Context, url string, body []byte) (io.R
 			msg = errResp.Error.Message
 		}
 
-		return nil, &unillm.APIError{
+		return nil, &llmrails.APIError{
 			StatusCode: resp.StatusCode,
 			Message:    msg,
 			Provider:   "gemini",
@@ -153,7 +153,7 @@ func (p *Provider) doRequest(ctx context.Context, url string, body []byte) (io.R
 	return resp.Body, nil
 }
 
-func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) {
+func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent) {
 	defer close(ch)
 	defer body.Close()
 
@@ -167,8 +167,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 
 		var resp response
 		if err := json.Unmarshal([]byte(event.Data), &resp); err != nil {
-			ch <- unillm.StreamEvent{
-				Type:  unillm.EventError,
+			ch <- llmrails.StreamEvent{
+				Type:  llmrails.EventError,
 				Error: fmt.Errorf("gemini: failed to parse stream chunk: %w", err),
 			}
 			return
@@ -181,20 +181,20 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		candidate := resp.Candidates[0]
 		for _, part := range candidate.Content.Parts {
 			if part.Text != "" {
-				ch <- unillm.StreamEvent{
-					Type:    unillm.EventContent,
+				ch <- llmrails.StreamEvent{
+					Type:    llmrails.EventContent,
 					Content: part.Text,
 				}
 			}
 			if part.FunctionCall != nil {
 				args, _ := json.Marshal(part.FunctionCall.Args)
-				tc := unillm.ToolCall{
+				tc := llmrails.ToolCall{
 					ID:        part.FunctionCall.Name, // Gemini doesn't provide IDs
 					Name:      part.FunctionCall.Name,
 					Arguments: string(args),
 				}
-				ch <- unillm.StreamEvent{
-					Type:     unillm.EventToolCall,
+				ch <- llmrails.StreamEvent{
+					Type:     llmrails.EventToolCall,
 					ToolCall: &tc,
 				}
 			}
@@ -205,8 +205,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		}
 		if candidate.FinishReason == "STOP" {
 			if resp.UsageMetadata != nil {
-				ch <- unillm.StreamEvent{
-					Usage: &unillm.TokenUsage{
+				ch <- llmrails.StreamEvent{
+					Usage: &llmrails.TokenUsage{
 						PromptTokens:     resp.UsageMetadata.PromptTokenCount,
 						CompletionTokens: resp.UsageMetadata.CandidatesTokenCount,
 						TotalTokens:      resp.UsageMetadata.TotalTokenCount,
@@ -217,17 +217,17 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 	}
 
 	if err := reader.Err(); err != nil {
-		ch <- unillm.StreamEvent{
-			Type:  unillm.EventError,
+		ch <- llmrails.StreamEvent{
+			Type:  llmrails.EventError,
 			Error: fmt.Errorf("gemini: stream read error: %w", err),
 		}
 		return
 	}
 
-	ch <- unillm.StreamEvent{Type: unillm.EventDone}
+	ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
 }
 
-func (p *Provider) buildRequestBody(req *unillm.CompletionRequest) ([]byte, error) {
+func (p *Provider) buildRequestBody(req *llmrails.CompletionRequest) ([]byte, error) {
 	r := request{
 		Contents: convertMessages(req),
 	}
@@ -267,11 +267,11 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest) ([]byte, erro
 	return json.Marshal(r)
 }
 
-func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
-	result := &unillm.CompletionResponse{}
+func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
+	result := &llmrails.CompletionResponse{}
 
 	if resp.UsageMetadata != nil {
-		result.Usage = unillm.TokenUsage{
+		result.Usage = llmrails.TokenUsage{
 			PromptTokens:     resp.UsageMetadata.PromptTokenCount,
 			CompletionTokens: resp.UsageMetadata.CandidatesTokenCount,
 			TotalTokens:      resp.UsageMetadata.TotalTokenCount,
@@ -288,7 +288,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 			}
 			if part.FunctionCall != nil {
 				args, _ := json.Marshal(part.FunctionCall.Args)
-				result.ToolCalls = append(result.ToolCalls, unillm.ToolCall{
+				result.ToolCalls = append(result.ToolCalls, llmrails.ToolCall{
 					ID:        part.FunctionCall.Name,
 					Name:      part.FunctionCall.Name,
 					Arguments: string(args),
@@ -300,7 +300,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 	return result
 }
 
-func convertMessages(req *unillm.CompletionRequest) []content {
+func convertMessages(req *llmrails.CompletionRequest) []content {
 	var contents []content
 
 	for _, m := range req.Messages {
@@ -347,7 +347,7 @@ func convertMessages(req *unillm.CompletionRequest) []content {
 	return contents
 }
 
-func convertTools(tools []unillm.ToolDefinition) []toolDeclaration {
+func convertTools(tools []llmrails.ToolDefinition) []toolDeclaration {
 	decls := make([]functionDecl, len(tools))
 	for i, t := range tools {
 		decls[i] = functionDecl{

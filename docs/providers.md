@@ -1,22 +1,22 @@
 # Providers
 
-unillm supports 11 LLM providers through a unified interface. Each provider is a separate Go package that you import only when needed.
+llmrails supports 11 LLM providers through a unified interface. Each provider is a separate Go package that you import only when needed.
 
 ## Provider List
 
 | Provider | Package | Base URL | Auth |
 |----------|---------|----------|------|
-| OpenAI | `unillm/openai` | `api.openai.com` | Bearer token |
-| Anthropic | `unillm/anthropic` | `api.anthropic.com` | x-api-key header |
-| Google Gemini | `unillm/gemini` | `generativelanguage.googleapis.com` | URL parameter |
-| DeepSeek | `unillm/deepseek` | `api.deepseek.com` | Bearer token |
-| Groq | `unillm/groq` | `api.groq.com` | Bearer token |
-| Fireworks | `unillm/fireworks` | `api.fireworks.ai` | Bearer token |
-| xAI | `unillm/xai` | `api.x.ai` | Bearer token |
-| OpenRouter | `unillm/openrouter` | `openrouter.ai` | Bearer token |
-| Together | `unillm/together` | `api.together.xyz` | Bearer token |
-| Mistral | `unillm/mistral` | `api.mistral.ai` | Bearer token |
-| Cohere | `unillm/cohere` | `api.cohere.com` | Bearer token |
+| OpenAI | `llmrails/openai` | `api.openai.com` | Bearer token |
+| Anthropic | `llmrails/anthropic` | `api.anthropic.com` | x-api-key header |
+| Google Gemini | `llmrails/gemini` | `generativelanguage.googleapis.com` | URL parameter |
+| DeepSeek | `llmrails/deepseek` | `api.deepseek.com` | Bearer token |
+| Groq | `llmrails/groq` | `api.groq.com` | Bearer token |
+| Fireworks | `llmrails/fireworks` | `api.fireworks.ai` | Bearer token |
+| xAI | `llmrails/xai` | `api.x.ai` | Bearer token |
+| OpenRouter | `llmrails/openrouter` | `openrouter.ai` | Bearer token |
+| Together | `llmrails/together` | `api.together.xyz` | Bearer token |
+| Mistral | `llmrails/mistral` | `api.mistral.ai` | Bearer token |
+| Cohere | `llmrails/cohere` | `api.cohere.com` | Bearer token |
 
 ## Feature Matrix
 
@@ -34,7 +34,7 @@ unillm supports 11 LLM providers through a unified interface. Each provider is a
 ## OpenAI
 
 ```go
-import "github.com/promptrails/unillm/openai"
+import "github.com/promptrails/llmrails/openai"
 
 provider := openai.New("sk-...")
 
@@ -52,7 +52,7 @@ provider := openai.New("sk-...",
 ## Anthropic
 
 ```go
-import "github.com/promptrails/unillm/anthropic"
+import "github.com/promptrails/llmrails/anthropic"
 
 provider := anthropic.New("sk-ant-...")
 ```
@@ -68,7 +68,7 @@ provider := anthropic.New("sk-ant-...")
 ## Google Gemini
 
 ```go
-import "github.com/promptrails/unillm/gemini"
+import "github.com/promptrails/llmrails/gemini"
 
 provider := gemini.New("your-api-key")
 ```
@@ -85,7 +85,7 @@ provider := gemini.New("your-api-key")
 ## DeepSeek
 
 ```go
-import "github.com/promptrails/unillm/deepseek"
+import "github.com/promptrails/llmrails/deepseek"
 
 provider := deepseek.New("your-api-key")
 ```
@@ -95,7 +95,7 @@ provider := deepseek.New("your-api-key")
 ## Groq
 
 ```go
-import "github.com/promptrails/unillm/groq"
+import "github.com/promptrails/llmrails/groq"
 
 provider := groq.New("your-api-key")
 ```
@@ -105,7 +105,7 @@ provider := groq.New("your-api-key")
 ## Fireworks
 
 ```go
-import "github.com/promptrails/unillm/fireworks"
+import "github.com/promptrails/llmrails/fireworks"
 
 provider := fireworks.New("your-api-key")
 ```
@@ -115,7 +115,7 @@ provider := fireworks.New("your-api-key")
 ## xAI (Grok)
 
 ```go
-import "github.com/promptrails/unillm/xai"
+import "github.com/promptrails/llmrails/xai"
 
 provider := xai.New("your-api-key")
 ```
@@ -125,7 +125,7 @@ provider := xai.New("your-api-key")
 ## OpenRouter
 
 ```go
-import "github.com/promptrails/unillm/openrouter"
+import "github.com/promptrails/llmrails/openrouter"
 
 provider := openrouter.New("your-api-key",
     openrouter.WithSiteInfo("https://myapp.com", "My App"),
@@ -139,7 +139,7 @@ provider := openrouter.New("your-api-key",
 ## Together
 
 ```go
-import "github.com/promptrails/unillm/together"
+import "github.com/promptrails/llmrails/together"
 
 provider := together.New("your-api-key")
 ```
@@ -149,7 +149,7 @@ provider := together.New("your-api-key")
 ## Mistral
 
 ```go
-import "github.com/promptrails/unillm/mistral"
+import "github.com/promptrails/llmrails/mistral"
 
 provider := mistral.New("your-api-key")
 ```
@@ -159,7 +159,7 @@ provider := mistral.New("your-api-key")
 ## Cohere
 
 ```go
-import "github.com/promptrails/unillm/cohere"
+import "github.com/promptrails/llmrails/cohere"
 
 provider := cohere.New("your-api-key")
 ```
@@ -171,7 +171,7 @@ provider := cohere.New("your-api-key")
 Any OpenAI-compatible API can be used with the `compat` package directly:
 
 ```go
-import "github.com/promptrails/unillm/compat"
+import "github.com/promptrails/llmrails/compat"
 
 provider := compat.New(compat.Config{
     Name:    "my-server",

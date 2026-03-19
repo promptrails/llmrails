@@ -1,13 +1,13 @@
-// Package groq provides a Groq LLM provider for unillm.
+// Package groq provides a Groq LLM provider for llmrails.
 //
 // Groq exposes an OpenAI-compatible API optimized for fast inference.
 //
 // # Usage
 //
 //	provider := groq.New("your-api-key")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "llama-3.1-70b-versatile",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package groq
 
@@ -15,13 +15,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/compat"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/compat"
 )
 
 const defaultBaseURL = "https://api.groq.com/openai/v1/chat/completions"
 
-// Provider implements unillm.Provider for Groq's API.
+// Provider implements llmrails.Provider for Groq's API.
 type Provider struct{ inner *compat.Provider }
 
 // Option configures the provider.
@@ -44,10 +44,10 @@ func New(apiKey string, opts ...Option) *Provider {
 	return &Provider{inner: compat.New(cfg)}
 }
 
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

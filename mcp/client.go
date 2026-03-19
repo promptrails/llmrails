@@ -1,8 +1,8 @@
-// Package mcp provides a Model Context Protocol (MCP) client for unillm.
+// Package mcp provides a Model Context Protocol (MCP) client for llmrails.
 //
 // MCP is a protocol for connecting LLMs to external tools and data sources.
-// This client connects to MCP servers and exposes their tools as unillm
-// ToolDefinitions, making them usable with any unillm Provider and the
+// This client connects to MCP servers and exposes their tools as llmrails
+// ToolDefinitions, making them usable with any llmrails Provider and the
 // tools.RunLoop function.
 //
 // # Usage
@@ -29,7 +29,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/promptrails/unillm"
+	"github.com/promptrails/llmrails"
 )
 
 // Client connects to an MCP server and provides tool discovery and execution.
@@ -102,16 +102,16 @@ func NewClient(baseURL string, opts ...Option) (*Client, error) {
 	return c, nil
 }
 
-// ToolDefinitions returns the available tools as unillm ToolDefinitions,
+// ToolDefinitions returns the available tools as llmrails ToolDefinitions,
 // ready to be passed to a CompletionRequest.
-func (c *Client) ToolDefinitions() []unillm.ToolDefinition {
+func (c *Client) ToolDefinitions() []llmrails.ToolDefinition {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	defs := make([]unillm.ToolDefinition, len(c.tools))
+	defs := make([]llmrails.ToolDefinition, len(c.tools))
 	for i, tool := range c.tools {
 		params, _ := json.Marshal(tool.InputSchema)
-		defs[i] = unillm.ToolDefinition{
+		defs[i] = llmrails.ToolDefinition{
 			Name:        tool.Name,
 			Description: tool.Description,
 			Parameters:  params,
@@ -167,7 +167,7 @@ func (c *Client) initialize() error {
 		"protocolVersion": "2025-03-26",
 		"capabilities":    map[string]interface{}{},
 		"clientInfo": map[string]interface{}{
-			"name":    "unillm",
+			"name":    "llmrails",
 			"version": "1.0.0",
 		},
 	})

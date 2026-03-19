@@ -1,13 +1,13 @@
-// Package fireworks provides a Fireworks AI LLM provider for unillm.
+// Package fireworks provides a Fireworks AI LLM provider for llmrails.
 //
 // Fireworks AI exposes an OpenAI-compatible API.
 //
 // # Usage
 //
 //	provider := fireworks.New("your-api-key")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "accounts/fireworks/models/llama-v3p1-70b-instruct",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package fireworks
 
@@ -15,13 +15,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/compat"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/compat"
 )
 
 const defaultBaseURL = "https://api.fireworks.ai/inference/v1/chat/completions"
 
-// Provider implements unillm.Provider for Fireworks AI's API.
+// Provider implements llmrails.Provider for Fireworks AI's API.
 type Provider struct{ inner *compat.Provider }
 
 // Option configures the provider.
@@ -44,10 +44,10 @@ func New(apiKey string, opts ...Option) *Provider {
 	return &Provider{inner: compat.New(cfg)}
 }
 
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

@@ -1,4 +1,4 @@
-// Package openai provides an OpenAI LLM provider for unillm.
+// Package openai provides an OpenAI LLM provider for llmrails.
 //
 // It supports all OpenAI chat completion models including GPT-4o, GPT-4,
 // and GPT-3.5. Features include streaming, tool/function calling,
@@ -7,9 +7,9 @@
 // # Usage
 //
 //	provider := openai.New("sk-...")
-//	resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
 //		Model:    "gpt-4o",
-//		Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 package openai
 
@@ -17,15 +17,15 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/compat"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/compat"
 )
 
 const (
 	defaultBaseURL = "https://api.openai.com/v1/chat/completions"
 )
 
-// Provider implements unillm.Provider for OpenAI's API.
+// Provider implements llmrails.Provider for OpenAI's API.
 type Provider struct {
 	inner *compat.Provider
 }
@@ -61,11 +61,11 @@ func New(apiKey string, opts ...Option) *Provider {
 }
 
 // Complete sends a completion request and returns the full response.
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
 // Stream sends a completion request and returns a channel of streaming events.
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

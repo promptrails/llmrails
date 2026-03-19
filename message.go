@@ -1,4 +1,4 @@
-package unillm
+package llmrails
 
 import "encoding/json"
 

@@ -1,16 +1,16 @@
-# unillm
+# llmrails
 
 Unified LLM provider interface for Go. One API, 11 providers.
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/promptrails/unillm.svg)](https://pkg.go.dev/github.com/promptrails/unillm)
-[![CI](https://github.com/promptrails/unillm/actions/workflows/ci.yml/badge.svg)](https://github.com/promptrails/unillm/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/promptrails/unillm)](https://goreportcard.com/report/github.com/promptrails/unillm)
+[![Go Reference](https://pkg.go.dev/badge/github.com/promptrails/llmrails.svg)](https://pkg.go.dev/github.com/promptrails/llmrails)
+[![CI](https://github.com/promptrails/llmrails/actions/workflows/ci.yml/badge.svg)](https://github.com/promptrails/llmrails/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/promptrails/llmrails)](https://goreportcard.com/report/github.com/promptrails/llmrails)
 
 ```go
 provider := openai.New("sk-...")
-resp, _ := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+    Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 })
 fmt.Println(resp.Content)
 ```
@@ -18,7 +18,7 @@ fmt.Println(resp.Content)
 ## Install
 
 ```bash
-go get github.com/promptrails/unillm
+go get github.com/promptrails/llmrails
 ```
 
 ## Features
@@ -48,7 +48,7 @@ go get github.com/promptrails/unillm
 | [Structured Output](docs/structured-output.md) | JSON schema constrained output |
 | [Retry & Fallback](docs/retry-fallback.md) | Resilience patterns |
 
-Full docs with search: [promptrails.github.io/unillm](https://promptrails.github.io/unillm)
+Full docs with search: [promptrails.github.io/llmrails](https://promptrails.github.io/llmrails)
 
 ## License
 

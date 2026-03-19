@@ -1,16 +1,16 @@
-# unillm
+# llmrails
 
 > Unified LLM provider interface for Go. One API, 11 providers.
 
-## What is unillm?
+## What is llmrails?
 
-unillm is a lightweight Go library that provides a single interface for interacting with multiple LLM providers. Write your code once, switch providers by changing one line.
+llmrails is a lightweight Go library that provides a single interface for interacting with multiple LLM providers. Write your code once, switch providers by changing one line.
 
 ```go
 provider := openai.New("sk-...")      // or anthropic, gemini, deepseek, groq, ...
-resp, _ := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []unillm.Message{{Role: "user", Content: "Hello!"}},
+    Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
 })
 ```
 
@@ -31,13 +31,13 @@ resp, _ := provider.Complete(ctx, &unillm.CompletionRequest{
 ## Install
 
 ```bash
-go get github.com/promptrails/unillm
+go get github.com/promptrails/llmrails
 ```
 
 Requires Go 1.22+.
 
 ## Quick Links
 
-- [GitHub Repository](https://github.com/promptrails/unillm)
-- [Go Package Reference](https://pkg.go.dev/github.com/promptrails/unillm)
+- [GitHub Repository](https://github.com/promptrails/llmrails)
+- [Go Package Reference](https://pkg.go.dev/github.com/promptrails/llmrails)
 - [Getting Started](getting-started.md)

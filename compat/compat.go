@@ -14,8 +14,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/promptrails/unillm"
-	"github.com/promptrails/unillm/internal/sse"
+	"github.com/promptrails/llmrails"
+	"github.com/promptrails/llmrails/internal/sse"
 )
 
 // Config holds the configuration for an OpenAI-compatible provider.
@@ -37,7 +37,7 @@ type Config struct {
 	HTTPClient *http.Client
 }
 
-// Provider implements unillm.Provider for OpenAI-compatible APIs.
+// Provider implements llmrails.Provider for OpenAI-compatible APIs.
 type Provider struct {
 	config Config
 	client *http.Client
@@ -53,7 +53,7 @@ func New(cfg Config) *Provider {
 }
 
 // Complete sends a non-streaming completion request.
-func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) (*unillm.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
 	body, err := p.buildRequestBody(req, false)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (p *Provider) Complete(ctx context.Context, req *unillm.CompletionRequest) 
 }
 
 // Stream sends a streaming completion request and returns a channel of events.
-func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<-chan unillm.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
 	body, err := p.buildRequestBody(req, true)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (p *Provider) Stream(ctx context.Context, req *unillm.CompletionRequest) (<
 		return nil, err
 	}
 
-	ch := make(chan unillm.StreamEvent, 64)
+	ch := make(chan llmrails.StreamEvent, 64)
 	go p.readStream(respBody, ch)
 	return ch, nil
 }
@@ -122,7 +122,7 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 			msg = errResp.Error.Message
 		}
 
-		return nil, &unillm.APIError{
+		return nil, &llmrails.APIError{
 			StatusCode: resp.StatusCode,
 			Message:    msg,
 			Provider:   p.config.Name,
@@ -132,12 +132,12 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 	return resp.Body, nil
 }
 
-func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) {
+func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent) {
 	defer close(ch)
 	defer body.Close()
 
 	reader := sse.NewReader(body)
-	var pendingToolCalls []unillm.ToolCall
+	var pendingToolCalls []llmrails.ToolCall
 
 	for {
 		event, ok := reader.Next()
@@ -148,19 +148,19 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		if event.Data == "[DONE]" {
 			// Send accumulated tool calls if any
 			for i := range pendingToolCalls {
-				ch <- unillm.StreamEvent{
-					Type:     unillm.EventToolCall,
+				ch <- llmrails.StreamEvent{
+					Type:     llmrails.EventToolCall,
 					ToolCall: &pendingToolCalls[i],
 				}
 			}
-			ch <- unillm.StreamEvent{Type: unillm.EventDone}
+			ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
 			return
 		}
 
 		var chunk streamChunk
 		if err := json.Unmarshal([]byte(event.Data), &chunk); err != nil {
-			ch <- unillm.StreamEvent{
-				Type:  unillm.EventError,
+			ch <- llmrails.StreamEvent{
+				Type:  llmrails.EventError,
 				Error: fmt.Errorf("%s: failed to parse stream chunk: %w", p.config.Name, err),
 			}
 			return
@@ -174,8 +174,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 
 		// Content
 		if delta.Content != "" {
-			ch <- unillm.StreamEvent{
-				Type:    unillm.EventContent,
+			ch <- llmrails.StreamEvent{
+				Type:    llmrails.EventContent,
 				Content: delta.Content,
 			}
 		}
@@ -183,7 +183,7 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		// Tool calls (accumulate across chunks)
 		for _, tc := range delta.ToolCalls {
 			for len(pendingToolCalls) <= tc.Index {
-				pendingToolCalls = append(pendingToolCalls, unillm.ToolCall{})
+				pendingToolCalls = append(pendingToolCalls, llmrails.ToolCall{})
 			}
 			if tc.ID != "" {
 				pendingToolCalls[tc.Index].ID = tc.ID
@@ -198,8 +198,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 		if chunk.Choices[0].FinishReason == "stop" || chunk.Choices[0].FinishReason == "tool_calls" {
 			// Usage may come in the final chunk
 			if chunk.Usage != nil {
-				ch <- unillm.StreamEvent{
-					Usage: &unillm.TokenUsage{
+				ch <- llmrails.StreamEvent{
+					Usage: &llmrails.TokenUsage{
 						PromptTokens:     chunk.Usage.PromptTokens,
 						CompletionTokens: chunk.Usage.CompletionTokens,
 						TotalTokens:      chunk.Usage.TotalTokens,
@@ -210,8 +210,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 	}
 
 	if err := reader.Err(); err != nil {
-		ch <- unillm.StreamEvent{
-			Type:  unillm.EventError,
+		ch <- llmrails.StreamEvent{
+			Type:  llmrails.EventError,
 			Error: fmt.Errorf("%s: stream read error: %w", p.config.Name, err),
 		}
 		return
@@ -219,15 +219,15 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- unillm.StreamEvent) 
 
 	// Stream ended without [DONE], send any pending tool calls
 	for i := range pendingToolCalls {
-		ch <- unillm.StreamEvent{
-			Type:     unillm.EventToolCall,
+		ch <- llmrails.StreamEvent{
+			Type:     llmrails.EventToolCall,
 			ToolCall: &pendingToolCalls[i],
 		}
 	}
-	ch <- unillm.StreamEvent{Type: unillm.EventDone}
+	ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
 }
 
-func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) ([]byte, error) {
+func (p *Provider) buildRequestBody(req *llmrails.CompletionRequest, stream bool) ([]byte, error) {
 	oaiReq := request{
 		Model:    req.Model,
 		Messages: convertMessages(req),
@@ -288,10 +288,10 @@ func (p *Provider) buildRequestBody(req *unillm.CompletionRequest, stream bool) 
 	return json.Marshal(oaiReq)
 }
 
-func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
-	result := &unillm.CompletionResponse{
+func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
+	result := &llmrails.CompletionResponse{
 		Model: resp.Model,
-		Usage: unillm.TokenUsage{
+		Usage: llmrails.TokenUsage{
 			PromptTokens:     resp.Usage.PromptTokens,
 			CompletionTokens: resp.Usage.CompletionTokens,
 			TotalTokens:      resp.Usage.TotalTokens,
@@ -304,7 +304,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 		result.FinishReason = choice.FinishReason
 
 		for _, tc := range choice.Message.ToolCalls {
-			result.ToolCalls = append(result.ToolCalls, unillm.ToolCall{
+			result.ToolCalls = append(result.ToolCalls, llmrails.ToolCall{
 				ID:        tc.ID,
 				Name:      tc.Function.Name,
 				Arguments: tc.Function.Arguments,
@@ -315,7 +315,7 @@ func (p *Provider) parseResponse(resp *response) *unillm.CompletionResponse {
 	return result
 }
 
-func convertMessages(req *unillm.CompletionRequest) []message {
+func convertMessages(req *llmrails.CompletionRequest) []message {
 	var msgs []message
 
 	if req.SystemPrompt != "" {
@@ -354,7 +354,7 @@ func convertMessages(req *unillm.CompletionRequest) []message {
 	return msgs
 }
 
-func convertTools(tools []unillm.ToolDefinition) []tool {
+func convertTools(tools []llmrails.ToolDefinition) []tool {
 	result := make([]tool, len(tools))
 	for i, t := range tools {
 		result[i] = tool{

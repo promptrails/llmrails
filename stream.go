@@ -1,4 +1,4 @@
-package unillm
+package llmrails
 
 // EventType represents the type of a streaming event.
 type EventType string

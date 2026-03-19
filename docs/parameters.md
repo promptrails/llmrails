@@ -7,10 +7,10 @@ Complete reference for all `CompletionRequest` fields and their provider support
 ### Model & Messages
 
 ```go
-req := &unillm.CompletionRequest{
+req := &llmrails.CompletionRequest{
     Model:        "gpt-4o",                    // Required: model identifier
     SystemPrompt: "You are a helpful assistant", // Optional: system instruction
-    Messages: []unillm.Message{                 // Required: conversation history
+    Messages: []llmrails.Message{                 // Required: conversation history
         {Role: "user", Content: "Hello!"},
     },
 }
@@ -44,7 +44,7 @@ req.MaxTokens = &maxTokens
 | Provider | Default | Notes |
 |----------|---------|-------|
 | OpenAI | Model-dependent | Optional |
-| Anthropic | 4096 | **Required** (unillm defaults to 4096) |
+| Anthropic | 4096 | **Required** (llmrails defaults to 4096) |
 | Gemini | Model-dependent | Optional |
 
 ### TopP (Nucleus Sampling)
@@ -149,7 +149,7 @@ req.OutputSchema = &schema
 Define functions the model can call. See [Tool Calling](tool-calling.md) for details.
 
 ```go
-req.Tools = []unillm.ToolDefinition{
+req.Tools = []llmrails.ToolDefinition{
     {
         Name:        "get_weather",
         Description: "Get weather for a city",
@@ -175,7 +175,7 @@ req.ThinkingBudget = &budget
 **Anthropic** — Extended thinking with configurable budget:
 ```go
 provider := anthropic.New("sk-ant-...")
-resp, _ := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:          "claude-sonnet-4-20250514",
     Messages:       messages,
     Thinking:       true,
@@ -189,7 +189,7 @@ fmt.Println(resp.Content)  // Final answer
 **OpenAI** — Reasoning effort for o-series models:
 ```go
 provider := openai.New("sk-...")
-resp, _ := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:    "o1",
     Messages: messages,
     Thinking: true,
@@ -215,10 +215,10 @@ pp := 0.3
 seed := 42
 budget := 15000
 
-resp, err := provider.Complete(ctx, &unillm.CompletionRequest{
+resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
     Model:            "gpt-4o",
     SystemPrompt:     "You are a creative writer.",
-    Messages:         []unillm.Message{{Role: "user", Content: "Write a story"}},
+    Messages:         []llmrails.Message{{Role: "user", Content: "Write a story"}},
     Temperature:      &temp,
     MaxTokens:        &maxTokens,
     TopP:             &topP,

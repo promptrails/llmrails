@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/promptrails/unillm"
+	"github.com/promptrails/llmrails"
 )
 
 // MaxIterations is the default maximum number of tool calling rounds.
@@ -63,7 +63,7 @@ type LoopOption func(*loopConfig)
 
 type loopConfig struct {
 	maxIterations int
-	onToolCall    func(call unillm.ToolCall, result string, err error)
+	onToolCall    func(call llmrails.ToolCall, result string, err error)
 }
 
 // WithMaxIterations sets the maximum number of tool calling rounds.
@@ -75,7 +75,7 @@ func WithMaxIterations(n int) LoopOption {
 
 // WithToolCallHook sets a callback invoked after each tool call execution.
 // Useful for logging, tracing, or metrics.
-func WithToolCallHook(fn func(call unillm.ToolCall, result string, err error)) LoopOption {
+func WithToolCallHook(fn func(call llmrails.ToolCall, result string, err error)) LoopOption {
 	return func(c *loopConfig) {
 		c.onToolCall = fn
 	}
@@ -84,10 +84,10 @@ func WithToolCallHook(fn func(call unillm.ToolCall, result string, err error)) L
 // RunLoopResult contains the final response and accumulated usage from all iterations.
 type RunLoopResult struct {
 	// Response is the final completion response (with text content, no more tool calls).
-	Response *unillm.CompletionResponse
+	Response *llmrails.CompletionResponse
 
 	// TotalUsage is the accumulated token usage across all iterations.
-	TotalUsage unillm.TokenUsage
+	TotalUsage llmrails.TokenUsage
 
 	// Iterations is the number of LLM calls made (including the initial one).
 	Iterations int
@@ -102,8 +102,8 @@ type RunLoopResult struct {
 // and tool result messages.
 func RunLoop(
 	ctx context.Context,
-	provider unillm.Provider,
-	req *unillm.CompletionRequest,
+	provider llmrails.Provider,
+	req *llmrails.CompletionRequest,
 	executor Executor,
 	opts ...LoopOption,
 ) (*RunLoopResult, error) {
@@ -132,7 +132,7 @@ func RunLoop(
 		}
 
 		// Append assistant message with tool calls
-		req.Messages = append(req.Messages, unillm.Message{
+		req.Messages = append(req.Messages, llmrails.Message{
 			Role:      "assistant",
 			Content:   resp.Content,
 			ToolCalls: resp.ToolCalls,
@@ -150,7 +150,7 @@ func RunLoop(
 				toolResult = fmt.Sprintf(`{"error": "%s"}`, execErr.Error())
 			}
 
-			req.Messages = append(req.Messages, unillm.Message{
+			req.Messages = append(req.Messages, llmrails.Message{
 				Role:       "tool",
 				Content:    toolResult,
 				ToolCallID: tc.ID,
