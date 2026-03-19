@@ -127,7 +127,7 @@ func (c *Client) StreamMessage(ctx context.Context, req SendMessageRequest) (<-c
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, fmt.Errorf("a2a: stream returned status %d", resp.StatusCode)
 	}
 

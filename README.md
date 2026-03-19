@@ -1,4 +1,4 @@
-# llmrails
+# LLMRails
 
 Unified LLM provider interface for Go. One API, 11 providers.
 
