@@ -5,7 +5,7 @@ The `chain` package enables sequential multi-step LLM pipelines where each step'
 ## Basic Chain
 
 ```go
-import "github.com/promptrails/llmrails/chain"
+import "github.com/promptrails/langrails/chain"
 
 c := chain.New(provider, []chain.Step{
     {SystemPrompt: "Summarize the following text in 2 sentences."},

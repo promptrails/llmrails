@@ -5,9 +5,9 @@ All providers support streaming responses via Go channels. This is useful for re
 ## Basic Streaming
 
 ```go
-events, err := provider.Stream(ctx, &llmrails.CompletionRequest{
+events, err := provider.Stream(ctx, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "Write a poem about Go"}},
+    Messages: []langrails.Message{{Role: "user", Content: "Write a poem about Go"}},
 })
 if err != nil {
     log.Fatal(err)
@@ -15,16 +15,16 @@ if err != nil {
 
 for event := range events {
     switch event.Type {
-    case llmrails.EventContent:
+    case langrails.EventContent:
         fmt.Print(event.Content) // Print each chunk as it arrives
 
-    case llmrails.EventToolCall:
+    case langrails.EventToolCall:
         fmt.Printf("\nTool call: %s(%s)\n", event.ToolCall.Name, event.ToolCall.Arguments)
 
-    case llmrails.EventDone:
+    case langrails.EventDone:
         fmt.Println("\n--- stream complete ---")
 
-    case llmrails.EventError:
+    case langrails.EventError:
         log.Printf("stream error: %v", event.Error)
     }
 
@@ -55,7 +55,7 @@ var fullContent strings.Builder
 
 events, _ := provider.Stream(ctx, req)
 for event := range events {
-    if event.Type == llmrails.EventContent {
+    if event.Type == langrails.EventContent {
         fullContent.WriteString(event.Content)
         // Also display to user...
     }
@@ -83,7 +83,7 @@ ctx, cancel := context.WithCancel(context.Background())
 
 events, _ := provider.Stream(ctx, req)
 for event := range events {
-    if event.Type == llmrails.EventContent {
+    if event.Type == langrails.EventContent {
         fmt.Print(event.Content)
         if strings.Contains(event.Content, "stop word") {
             cancel() // Stop streaming
@@ -97,16 +97,16 @@ for event := range events {
 When a model decides to call tools during streaming, tool call events are accumulated and emitted before the `EventDone` event:
 
 ```go
-var toolCalls []llmrails.ToolCall
+var toolCalls []langrails.ToolCall
 
 events, _ := provider.Stream(ctx, req)
 for event := range events {
     switch event.Type {
-    case llmrails.EventContent:
+    case langrails.EventContent:
         fmt.Print(event.Content)
-    case llmrails.EventToolCall:
+    case langrails.EventToolCall:
         toolCalls = append(toolCalls, *event.ToolCall)
-    case llmrails.EventDone:
+    case langrails.EventDone:
         if len(toolCalls) > 0 {
             // Process tool calls...
         }

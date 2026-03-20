@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/promptrails/llmrails"
-	"github.com/promptrails/llmrails/compat"
+	"github.com/promptrails/langrails"
+	"github.com/promptrails/langrails/compat"
 )
 
 func TestNew(t *testing.T) {
@@ -47,9 +47,9 @@ func TestProvider_Complete(t *testing.T) {
 	defer server.Close()
 
 	provider := New("test-key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "openai/gpt-4o",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -81,9 +81,9 @@ func TestProvider_WithSiteInfo(t *testing.T) {
 		WithBaseURL(server.URL),
 		WithSiteInfo("https://myapp.com", "My App"),
 	)
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "test",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -100,9 +100,9 @@ func TestProvider_Stream(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &langrails.CompletionRequest{
 		Model:    "test",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -110,7 +110,7 @@ func TestProvider_Stream(t *testing.T) {
 
 	var content string
 	for event := range ch {
-		if event.Type == llmrails.EventContent {
+		if event.Type == langrails.EventContent {
 			content += event.Content
 		}
 	}

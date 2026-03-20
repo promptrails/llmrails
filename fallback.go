@@ -1,4 +1,4 @@
-package llmrails
+package langrails
 
 import "context"
 
@@ -7,7 +7,7 @@ import "context"
 //
 // Fallback providers can be chained to create a priority list:
 //
-//	provider := llmrails.WithFallback(
+//	provider := langrails.WithFallback(
 //		openai.New("sk-..."),
 //		anthropic.New("sk-ant-..."),
 //	)

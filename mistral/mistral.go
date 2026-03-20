@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/llmrails"
-	"github.com/promptrails/llmrails/compat"
+	"github.com/promptrails/langrails"
+	"github.com/promptrails/langrails/compat"
 )
 
 const defaultBaseURL = "https://api.mistral.ai/v1/chat/completions"
 
-// Provider implements llmrails.Provider for Mistral AI's API.
+// Provider implements langrails.Provider for Mistral AI's API.
 type Provider struct{ inner *compat.Provider }
 
 // Option configures the provider.
@@ -33,10 +33,10 @@ func New(apiKey string, opts ...Option) *Provider {
 	return &Provider{inner: compat.New(cfg)}
 }
 
-func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *langrails.CompletionRequest) (*langrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
-func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *langrails.CompletionRequest) (<-chan langrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

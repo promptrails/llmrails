@@ -1,3 +1,3 @@
-module github.com/promptrails/llmrails
+module github.com/promptrails/langrails
 
 go 1.24.0

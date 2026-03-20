@@ -15,7 +15,7 @@ The `a2a` package implements the [Agent-to-Agent (A2A) protocol](https://google.
 ### Discover Agent
 
 ```go
-import "github.com/promptrails/llmrails/a2a"
+import "github.com/promptrails/langrails/a2a"
 
 client := a2a.NewClient("https://agent.example.com/a2a")
 
@@ -109,7 +109,7 @@ type TaskHandler interface {
 
 ```go
 type MyAgent struct {
-    provider llmrails.Provider
+    provider langrails.Provider
     tasks    map[string]*a2a.Task
 }
 
@@ -123,9 +123,9 @@ func (a *MyAgent) HandleMessage(ctx context.Context, req a2a.SendMessageRequest)
     }
 
     // Call LLM
-    resp, err := a.provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, err := a.provider.Complete(ctx, &langrails.CompletionRequest{
         Model:    "gpt-4o",
-        Messages: []llmrails.Message{{Role: "user", Content: input}},
+        Messages: []langrails.Message{{Role: "user", Content: input}},
     })
     if err != nil {
         return nil, err

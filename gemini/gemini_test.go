@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/promptrails/llmrails"
+	"github.com/promptrails/langrails"
 )
 
 func TestProvider_Complete(t *testing.T) {
@@ -28,10 +28,10 @@ func TestProvider_Complete(t *testing.T) {
 	defer server.Close()
 
 	provider := New("test-key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "gemini-2.0-flash",
 		SystemPrompt: "Be helpful",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -59,10 +59,10 @@ func TestProvider_Complete_ToolCalls(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "gemini-2.0-flash",
-		Messages: []llmrails.Message{{Role: "user", Content: "Weather?"}},
-		Tools: []llmrails.ToolDefinition{{
+		Messages: []langrails.Message{{Role: "user", Content: "Weather?"}},
+		Tools: []langrails.ToolDefinition{{
 			Name:        "get_weather",
 			Description: "Get weather",
 			Parameters:  json.RawMessage(`{"type":"object"}`),
@@ -100,9 +100,9 @@ func TestProvider_Complete_StructuredOutput(t *testing.T) {
 
 	schema := []byte(`{"type":"object","properties":{"sentiment":{"type":"string"}}}`)
 	provider := New("key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "gemini-2.0-flash",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Analyze"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Analyze"}},
 		OutputSchema: &schema,
 	})
 	if err != nil {
@@ -127,14 +127,14 @@ func TestProvider_Complete_APIError(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "bad-model",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	apiErr, ok := err.(*llmrails.APIError)
+	apiErr, ok := err.(*langrails.APIError)
 	if !ok {
 		t.Fatalf("expected APIError, got %T", err)
 	}
@@ -162,9 +162,9 @@ func TestProvider_Stream(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &langrails.CompletionRequest{
 		Model:    "gemini-2.0-flash",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -172,7 +172,7 @@ func TestProvider_Stream(t *testing.T) {
 
 	var content string
 	for event := range ch {
-		if event.Type == llmrails.EventContent {
+		if event.Type == langrails.EventContent {
 			content += event.Content
 		}
 	}
@@ -182,10 +182,10 @@ func TestProvider_Stream(t *testing.T) {
 }
 
 func TestProvider_ConvertMessages(t *testing.T) {
-	req := &llmrails.CompletionRequest{
-		Messages: []llmrails.Message{
+	req := &langrails.CompletionRequest{
+		Messages: []langrails.Message{
 			{Role: "user", Content: "Weather?"},
-			{Role: "assistant", ToolCalls: []llmrails.ToolCall{{Name: "get_weather", Arguments: `{"city":"Istanbul"}`}}},
+			{Role: "assistant", ToolCalls: []langrails.ToolCall{{Name: "get_weather", Arguments: `{"city":"Istanbul"}`}}},
 			{Role: "tool", ToolCallID: "get_weather", Content: `{"temp":22}`},
 		},
 	}
@@ -230,9 +230,9 @@ func TestProvider_Complete_WithAllParams(t *testing.T) {
 
 	topK := 40
 	provider := New("key", WithBaseURL(server.URL))
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "gemini-2.0-flash",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 		TopK:     &topK,
 		Stop:     []string{"END"},
 	})

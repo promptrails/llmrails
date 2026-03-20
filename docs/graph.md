@@ -13,7 +13,7 @@ The `graph` package provides a stateful workflow engine inspired by LangGraph. I
 ## Basic Graph
 
 ```go
-import "github.com/promptrails/llmrails/graph"
+import "github.com/promptrails/langrails/graph"
 
 type State struct {
     Input  string
@@ -23,9 +23,9 @@ type State struct {
 g := graph.New[State]()
 
 g.AddNode("process", func(ctx context.Context, s State) (State, error) {
-    resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
         Model:    "gpt-4o",
-        Messages: []llmrails.Message{{Role: "user", Content: s.Input}},
+        Messages: []langrails.Message{{Role: "user", Content: s.Input}},
     })
     s.Output = resp.Content
     return s, nil
@@ -53,10 +53,10 @@ g := graph.New[State]()
 
 // Classification node
 g.AddNode("classify", func(ctx context.Context, s State) (State, error) {
-    resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
         Model:        "gpt-4o",
         SystemPrompt: "Classify the input as 'question', 'complaint', or 'feedback'. Respond with one word.",
-        Messages:     []llmrails.Message{{Role: "user", Content: s.Input}},
+        Messages:     []langrails.Message{{Role: "user", Content: s.Input}},
     })
     s.Category = strings.TrimSpace(resp.Content)
     return s, nil
@@ -64,10 +64,10 @@ g.AddNode("classify", func(ctx context.Context, s State) (State, error) {
 
 // Handler nodes
 g.AddNode("answer", func(ctx context.Context, s State) (State, error) {
-    resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
         Model:        "gpt-4o",
         SystemPrompt: "Answer the following question helpfully.",
-        Messages:     []llmrails.Message{{Role: "user", Content: s.Input}},
+        Messages:     []langrails.Message{{Role: "user", Content: s.Input}},
     })
     s.Output = resp.Content
     return s, nil
@@ -115,10 +115,10 @@ type State struct {
 g := graph.New[State]()
 
 g.AddNode("write", func(ctx context.Context, s State) (State, error) {
-    resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
         Model:        "gpt-4o",
         SystemPrompt: "Improve this draft. Make it more concise and engaging.",
-        Messages:     []llmrails.Message{{Role: "user", Content: s.Draft}},
+        Messages:     []langrails.Message{{Role: "user", Content: s.Draft}},
     })
     s.Draft = resp.Content
     s.Rounds++
@@ -126,10 +126,10 @@ g.AddNode("write", func(ctx context.Context, s State) (State, error) {
 })
 
 g.AddNode("evaluate", func(ctx context.Context, s State) (State, error) {
-    resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
         Model:        "gpt-4o",
         SystemPrompt: "Rate this text quality 1-10. Respond with just the number.",
-        Messages:     []llmrails.Message{{Role: "user", Content: s.Draft}},
+        Messages:     []langrails.Message{{Role: "user", Content: s.Draft}},
     })
     s.Score, _ = strconv.Atoi(strings.TrimSpace(resp.Content))
     return s, nil

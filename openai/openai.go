@@ -4,15 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/promptrails/llmrails"
-	"github.com/promptrails/llmrails/compat"
+	"github.com/promptrails/langrails"
+	"github.com/promptrails/langrails/compat"
 )
 
 const (
 	defaultBaseURL = "https://api.openai.com/v1/chat/completions"
 )
 
-// Provider implements llmrails.Provider for OpenAI's API.
+// Provider implements langrails.Provider for OpenAI's API.
 type Provider struct {
 	inner *compat.Provider
 }
@@ -48,11 +48,11 @@ func New(apiKey string, opts ...Option) *Provider {
 }
 
 // Complete sends a completion request and returns the full response.
-func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *langrails.CompletionRequest) (*langrails.CompletionResponse, error) {
 	return p.inner.Complete(ctx, req)
 }
 
 // Stream sends a completion request and returns a channel of streaming events.
-func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *langrails.CompletionRequest) (<-chan langrails.StreamEvent, error) {
 	return p.inner.Stream(ctx, req)
 }

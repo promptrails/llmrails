@@ -1,4 +1,4 @@
-package llmrails
+package langrails
 
 import "fmt"
 

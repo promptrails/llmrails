@@ -4,12 +4,12 @@ The `mcp` package provides a client for the [Model Context Protocol](https://mod
 
 ## What is MCP?
 
-MCP is an open protocol that standardizes how LLMs interact with external tools and data sources. An MCP server exposes tools via a JSON-RPC 2.0 API. The llmrails MCP client connects to these servers, discovers available tools, and executes them.
+MCP is an open protocol that standardizes how LLMs interact with external tools and data sources. An MCP server exposes tools via a JSON-RPC 2.0 API. The langrails MCP client connects to these servers, discovers available tools, and executes them.
 
 ## Connecting to an MCP Server
 
 ```go
-import "github.com/promptrails/llmrails/mcp"
+import "github.com/promptrails/langrails/mcp"
 
 client, err := mcp.NewClient("http://localhost:8080/mcp",
     mcp.WithBearerToken("your-token"),
@@ -42,9 +42,9 @@ mcp.NewClient(url, mcp.WithHeader("X-Custom-Auth", "value"))
 toolDefs := client.ToolDefinitions()
 
 // 2. Send to provider with tools
-resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
+resp, err := provider.Complete(ctx, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "Search for Go tutorials"}},
+    Messages: []langrails.Message{{Role: "user", Content: "Search for Go tutorials"}},
     Tools:    toolDefs,
 })
 
@@ -62,8 +62,8 @@ The MCP client implements `tools.Executor`, so it works directly with `tools.Run
 
 ```go
 import (
-    "github.com/promptrails/llmrails/mcp"
-    "github.com/promptrails/llmrails/tools"
+    "github.com/promptrails/langrails/mcp"
+    "github.com/promptrails/langrails/tools"
 )
 
 client, _ := mcp.NewClient("http://localhost:8080/mcp",
@@ -71,9 +71,9 @@ client, _ := mcp.NewClient("http://localhost:8080/mcp",
 )
 defer client.Close()
 
-result, err := tools.RunLoop(ctx, provider, &llmrails.CompletionRequest{
+result, err := tools.RunLoop(ctx, provider, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "What's the weather?"}},
+    Messages: []langrails.Message{{Role: "user", Content: "What's the weather?"}},
     Tools:    client.ToolDefinitions(),
 }, client) // client implements tools.Executor
 
@@ -95,7 +95,7 @@ localFuncs := map[string]tools.Func{
 }
 
 // Combine tool definitions
-allTools := append(mcpClient.ToolDefinitions(), llmrails.ToolDefinition{
+allTools := append(mcpClient.ToolDefinitions(), langrails.ToolDefinition{
     Name:        "calculate",
     Description: "Perform calculations",
     Parameters:  json.RawMessage(`{"type":"object","properties":{"expression":{"type":"string"}}}`),
@@ -116,7 +116,7 @@ func (c *combinedExecutor) Execute(ctx context.Context, name string, args string
     return c.mcp.Execute(ctx, name, args)
 }
 
-result, err := tools.RunLoop(ctx, provider, &llmrails.CompletionRequest{
+result, err := tools.RunLoop(ctx, provider, &langrails.CompletionRequest{
     Model:    "gpt-4o",
     Messages: messages,
     Tools:    allTools,

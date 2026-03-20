@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/promptrails/llmrails"
+	"github.com/promptrails/langrails"
 )
 
 func newMockServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
@@ -49,10 +49,10 @@ func TestProvider_Complete(t *testing.T) {
 	defer server.Close()
 
 	provider := New("test-key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "claude-sonnet-4-20250514",
 		SystemPrompt: "Be helpful",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -78,10 +78,10 @@ func TestProvider_Complete_ToolCalls(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "claude-sonnet-4-20250514",
-		Messages: []llmrails.Message{{Role: "user", Content: "Weather?"}},
-		Tools: []llmrails.ToolDefinition{{
+		Messages: []langrails.Message{{Role: "user", Content: "Weather?"}},
+		Tools: []langrails.ToolDefinition{{
 			Name:        "get_weather",
 			Description: "Get weather",
 			Parameters:  json.RawMessage(`{"type":"object"}`),
@@ -120,9 +120,9 @@ func TestProvider_Complete_StructuredOutput(t *testing.T) {
 
 	schema := []byte(`{"type":"object","properties":{"sentiment":{"type":"string"}}}`)
 	provider := New("key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "claude-sonnet-4-20250514",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Analyze"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Analyze"}},
 		OutputSchema: &schema,
 	})
 	if err != nil {
@@ -160,9 +160,9 @@ func TestProvider_Complete_Thinking(t *testing.T) {
 
 	budget := 5000
 	provider := New("key", WithBaseURL(server.URL))
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:          "claude-sonnet-4-20250514",
-		Messages:       []llmrails.Message{{Role: "user", Content: "Think hard"}},
+		Messages:       []langrails.Message{{Role: "user", Content: "Think hard"}},
 		Thinking:       true,
 		ThinkingBudget: &budget,
 	})
@@ -190,14 +190,14 @@ func TestProvider_Complete_APIError(t *testing.T) {
 	defer server.Close()
 
 	provider := New("bad-key", WithBaseURL(server.URL))
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "claude-sonnet-4-20250514",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	apiErr, ok := err.(*llmrails.APIError)
+	apiErr, ok := err.(*langrails.APIError)
 	if !ok {
 		t.Fatalf("expected APIError, got %T", err)
 	}
@@ -225,9 +225,9 @@ func TestProvider_Stream(t *testing.T) {
 	defer server.Close()
 
 	provider := New("key", WithBaseURL(server.URL))
-	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &langrails.CompletionRequest{
 		Model:    "claude-sonnet-4-20250514",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -237,11 +237,11 @@ func TestProvider_Stream(t *testing.T) {
 	var gotDone bool
 	for event := range ch {
 		switch event.Type {
-		case llmrails.EventContent:
+		case langrails.EventContent:
 			content += event.Content
-		case llmrails.EventDone:
+		case langrails.EventDone:
 			gotDone = true
-		case llmrails.EventError:
+		case langrails.EventError:
 			t.Fatalf("unexpected error: %v", event.Error)
 		}
 	}
@@ -254,10 +254,10 @@ func TestProvider_Stream(t *testing.T) {
 }
 
 func TestProvider_ConvertMessages_ToolResults(t *testing.T) {
-	req := &llmrails.CompletionRequest{
-		Messages: []llmrails.Message{
+	req := &langrails.CompletionRequest{
+		Messages: []langrails.Message{
 			{Role: "user", Content: "Weather?"},
-			{Role: "assistant", Content: "", ToolCalls: []llmrails.ToolCall{{ID: "tc_1", Name: "get_weather", Arguments: `{"city":"Istanbul"}`}}},
+			{Role: "assistant", Content: "", ToolCalls: []langrails.ToolCall{{ID: "tc_1", Name: "get_weather", Arguments: `{"city":"Istanbul"}`}}},
 			{Role: "tool", ToolCallID: "tc_1", Content: `{"temp":22}`},
 		},
 	}

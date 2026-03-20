@@ -1,16 +1,16 @@
-# llmrails
+# langrails
 
 > Unified LLM provider interface for Go. One API, 11 providers.
 
-## What is llmrails?
+## What is langrails?
 
-llmrails is a lightweight Go library that provides a single interface for interacting with multiple LLM providers. Write your code once, switch providers by changing one line.
+langrails is a lightweight Go library that provides a single interface for interacting with multiple LLM providers. Write your code once, switch providers by changing one line.
 
 ```go
 provider := openai.New("sk-...")      // or anthropic, gemini, deepseek, groq, ...
-resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
+resp, _ := provider.Complete(ctx, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
+    Messages: []langrails.Message{{Role: "user", Content: "Hello!"}},
 })
 ```
 
@@ -31,13 +31,13 @@ resp, _ := provider.Complete(ctx, &llmrails.CompletionRequest{
 ## Install
 
 ```bash
-go get github.com/promptrails/llmrails
+go get github.com/promptrails/langrails
 ```
 
 Requires Go 1.22+.
 
 ## Quick Links
 
-- [GitHub Repository](https://github.com/promptrails/llmrails)
-- [Go Package Reference](https://pkg.go.dev/github.com/promptrails/llmrails)
+- [GitHub Repository](https://github.com/promptrails/langrails)
+- [Go Package Reference](https://pkg.go.dev/github.com/promptrails/langrails)
 - [Getting Started](getting-started.md)

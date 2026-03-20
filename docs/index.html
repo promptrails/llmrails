@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>llmrails — Unified LLM Provider for Go</title>
+  <title>langrails — Unified LLM Provider for Go</title>
   <meta name="description" content="One API, 11 providers. Unified LLM interface for Go with streaming, tool calling, chains, graphs, and MCP support." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -419,8 +419,8 @@
   <div id="app"></div>
   <script>
     window.$docsify = {
-      name: 'LLMRails',
-      repo: 'https://github.com/promptrails/llmrails',
+      name: 'LangRails',
+      repo: 'https://github.com/promptrails/langrails',
       loadSidebar: true,
       subMaxLevel: 3,
       auto2top: true,
@@ -443,13 +443,13 @@
 
   <script>
     function getPreferredTheme() {
-      const stored = localStorage.getItem('llmrails-theme');
+      const stored = localStorage.getItem('langrails-theme');
       if (stored) return stored;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     function setTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('llmrails-theme', theme);
+      localStorage.setItem('langrails-theme', theme);
     }
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme') || 'light';

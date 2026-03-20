@@ -1,13 +1,13 @@
 # Tool Calling
 
-Tool calling (also called function calling) lets the LLM request execution of external functions. llmrails provides a unified tool calling interface across all providers and an automatic tool execution loop.
+Tool calling (also called function calling) lets the LLM request execution of external functions. langrails provides a unified tool calling interface across all providers and an automatic tool execution loop.
 
 ## Defining Tools
 
-Tools are defined using `llmrails.ToolDefinition` with a JSON schema for parameters:
+Tools are defined using `langrails.ToolDefinition` with a JSON schema for parameters:
 
 ```go
-tools := []llmrails.ToolDefinition{
+tools := []langrails.ToolDefinition{
     {
         Name:        "get_weather",
         Description: "Get current weather for a city",
@@ -39,9 +39,9 @@ tools := []llmrails.ToolDefinition{
 Handle tool calls yourself for full control:
 
 ```go
-resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
+resp, err := provider.Complete(ctx, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "Weather in Istanbul?"}},
+    Messages: []langrails.Message{{Role: "user", Content: "Weather in Istanbul?"}},
     Tools:    tools,
 })
 
@@ -54,9 +54,9 @@ if len(resp.ToolCalls) > 0 {
     result := executeMyTool(tc.Name, tc.Arguments)
 
     // Send result back to the model
-    resp, err = provider.Complete(ctx, &llmrails.CompletionRequest{
+    resp, err = provider.Complete(ctx, &langrails.CompletionRequest{
         Model: "gpt-4o",
-        Messages: []llmrails.Message{
+        Messages: []langrails.Message{
             {Role: "user", Content: "Weather in Istanbul?"},
             {Role: "assistant", ToolCalls: resp.ToolCalls},
             {Role: "tool", ToolCallID: tc.ID, Content: result},
@@ -72,7 +72,7 @@ if len(resp.ToolCalls) > 0 {
 The `tools` package automates the entire cycle:
 
 ```go
-import "github.com/promptrails/llmrails/tools"
+import "github.com/promptrails/langrails/tools"
 
 // Define tool implementations
 executor := tools.NewMap(map[string]tools.Func{
@@ -92,9 +92,9 @@ executor := tools.NewMap(map[string]tools.Func{
 })
 
 // RunLoop handles the entire LLM ↔ tool cycle
-result, err := tools.RunLoop(ctx, provider, &llmrails.CompletionRequest{
+result, err := tools.RunLoop(ctx, provider, &langrails.CompletionRequest{
     Model:    "gpt-4o",
-    Messages: []llmrails.Message{{Role: "user", Content: "Weather in Istanbul?"}},
+    Messages: []langrails.Message{{Role: "user", Content: "Weather in Istanbul?"}},
     Tools:    toolDefs,
 }, executor)
 
@@ -113,7 +113,7 @@ result, err := tools.RunLoop(ctx, provider, req, executor,
 
 // Hook for observability
 result, err := tools.RunLoop(ctx, provider, req, executor,
-    tools.WithToolCallHook(func(call llmrails.ToolCall, result string, err error) {
+    tools.WithToolCallHook(func(call langrails.ToolCall, result string, err error) {
         log.Printf("Tool: %s, Result: %s, Error: %v", call.Name, result, err)
     }),
 )

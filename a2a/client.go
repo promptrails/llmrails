@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/promptrails/llmrails/internal/sse"
+	"github.com/promptrails/langrails/internal/sse"
 )
 
 // Client communicates with a remote A2A agent.

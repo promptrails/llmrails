@@ -1,21 +1,21 @@
 # Retry & Fallback
 
-llmrails provides composable decorators for building resilient LLM applications.
+langrails provides composable decorators for building resilient LLM applications.
 
 ## Retry
 
 Automatically retry on transient errors (rate limits, server errors):
 
 ```go
-provider := llmrails.WithRetry(openai.New("sk-..."), 3)
+provider := langrails.WithRetry(openai.New("sk-..."), 3)
 // 3 retries with exponential backoff: 1s, 2s, 4s
 ```
 
 ### Custom Backoff
 
 ```go
-provider := llmrails.WithRetry(openai.New("sk-..."), 5,
-    llmrails.WithBaseDelay(500 * time.Millisecond),
+provider := langrails.WithRetry(openai.New("sk-..."), 5,
+    langrails.WithBaseDelay(500 * time.Millisecond),
 )
 // 500ms, 1s, 2s, 4s, 8s
 ```
@@ -50,7 +50,7 @@ For streaming, only the initial connection is retried. Mid-stream failures are n
 Automatically switch to a backup provider on failure:
 
 ```go
-provider := llmrails.WithFallback(
+provider := langrails.WithFallback(
     openai.New("sk-..."),       // Primary
     anthropic.New("sk-ant-..."), // Fallback
 )
@@ -62,9 +62,9 @@ Any error from the primary triggers the fallback — not just retryable errors.
 
 ```go
 // Each provider retries independently, then falls back
-provider := llmrails.WithFallback(
-    llmrails.WithRetry(openai.New("sk-..."), 3),
-    llmrails.WithRetry(anthropic.New("sk-ant-..."), 3),
+provider := langrails.WithFallback(
+    langrails.WithRetry(openai.New("sk-..."), 3),
+    langrails.WithRetry(anthropic.New("sk-ant-..."), 3),
 )
 ```
 
@@ -73,9 +73,9 @@ This gives you: OpenAI (try 4 times) → Anthropic (try 4 times).
 ## Chaining Multiple Fallbacks
 
 ```go
-provider := llmrails.WithFallback(
+provider := langrails.WithFallback(
     openai.New("sk-..."),
-    llmrails.WithFallback(
+    langrails.WithFallback(
         anthropic.New("sk-ant-..."),
         groq.New("gsk-..."),
     ),
@@ -86,4 +86,4 @@ OpenAI → Anthropic → Groq priority chain.
 
 ## Interface Compliance
 
-Both `RetryProvider` and `FallbackProvider` implement `llmrails.Provider`, so they work everywhere a provider is expected — including chains, graphs, and tool loops.
+Both `RetryProvider` and `FallbackProvider` implement `langrails.Provider`, so they work everywhere a provider is expected — including chains, graphs, and tool loops.

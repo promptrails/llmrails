@@ -5,36 +5,36 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/promptrails/llmrails"
+	"github.com/promptrails/langrails"
 )
 
 type mockProvider struct {
 	calls   int
-	handler func(req *llmrails.CompletionRequest) *llmrails.CompletionResponse
+	handler func(req *langrails.CompletionRequest) *langrails.CompletionResponse
 }
 
-func (m *mockProvider) Complete(_ context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
+func (m *mockProvider) Complete(_ context.Context, req *langrails.CompletionRequest) (*langrails.CompletionResponse, error) {
 	m.calls++
 	return m.handler(req), nil
 }
 
-func (m *mockProvider) Stream(_ context.Context, _ *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
+func (m *mockProvider) Stream(_ context.Context, _ *langrails.CompletionRequest) (<-chan langrails.StreamEvent, error) {
 	return nil, nil
 }
 
 func TestChain_TwoSteps(t *testing.T) {
 	provider := &mockProvider{
-		handler: func(req *llmrails.CompletionRequest) *llmrails.CompletionResponse {
+		handler: func(req *langrails.CompletionRequest) *langrails.CompletionResponse {
 			input := req.Messages[0].Content
 			if strings.Contains(req.SystemPrompt, "Summarize") {
-				return &llmrails.CompletionResponse{
+				return &langrails.CompletionResponse{
 					Content: "Summary of: " + input,
-					Usage:   llmrails.TokenUsage{TotalTokens: 10},
+					Usage:   langrails.TokenUsage{TotalTokens: 10},
 				}
 			}
-			return &llmrails.CompletionResponse{
+			return &langrails.CompletionResponse{
 				Content: "Translated: " + input,
-				Usage:   llmrails.TokenUsage{TotalTokens: 8},
+				Usage:   langrails.TokenUsage{TotalTokens: 8},
 			}
 		},
 	}
@@ -65,8 +65,8 @@ func TestChain_TwoSteps(t *testing.T) {
 
 func TestChain_WithTransform(t *testing.T) {
 	provider := &mockProvider{
-		handler: func(req *llmrails.CompletionRequest) *llmrails.CompletionResponse {
-			return &llmrails.CompletionResponse{Content: req.Messages[0].Content}
+		handler: func(req *langrails.CompletionRequest) *langrails.CompletionResponse {
+			return &langrails.CompletionResponse{Content: req.Messages[0].Content}
 		},
 	}
 
@@ -90,8 +90,8 @@ func TestChain_WithTransform(t *testing.T) {
 
 func TestChain_InputTemplate(t *testing.T) {
 	provider := &mockProvider{
-		handler: func(req *llmrails.CompletionRequest) *llmrails.CompletionResponse {
-			return &llmrails.CompletionResponse{Content: "processed: " + req.Messages[0].Content}
+		handler: func(req *langrails.CompletionRequest) *langrails.CompletionResponse {
+			return &langrails.CompletionResponse{Content: "processed: " + req.Messages[0].Content}
 		},
 	}
 
@@ -115,13 +115,13 @@ func TestChain_InputTemplate(t *testing.T) {
 
 func TestChain_PerStepProvider(t *testing.T) {
 	provider1 := &mockProvider{
-		handler: func(_ *llmrails.CompletionRequest) *llmrails.CompletionResponse {
-			return &llmrails.CompletionResponse{Content: "from-provider-1"}
+		handler: func(_ *langrails.CompletionRequest) *langrails.CompletionResponse {
+			return &langrails.CompletionResponse{Content: "from-provider-1"}
 		},
 	}
 	provider2 := &mockProvider{
-		handler: func(_ *llmrails.CompletionRequest) *llmrails.CompletionResponse {
-			return &llmrails.CompletionResponse{Content: "from-provider-2"}
+		handler: func(_ *langrails.CompletionRequest) *langrails.CompletionResponse {
+			return &langrails.CompletionResponse{Content: "from-provider-2"}
 		},
 	}
 
@@ -148,8 +148,8 @@ func TestChain_PerStepProvider(t *testing.T) {
 
 func TestChain_NoModel(t *testing.T) {
 	provider := &mockProvider{
-		handler: func(_ *llmrails.CompletionRequest) *llmrails.CompletionResponse {
-			return &llmrails.CompletionResponse{Content: "ok"}
+		handler: func(_ *langrails.CompletionRequest) *langrails.CompletionResponse {
+			return &langrails.CompletionResponse{Content: "ok"}
 		},
 	}
 

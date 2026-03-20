@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/promptrails/llmrails"
-	"github.com/promptrails/llmrails/internal/sse"
+	"github.com/promptrails/langrails"
+	"github.com/promptrails/langrails/internal/sse"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	apiVersion       = "2023-06-01"
 )
 
-// Provider implements llmrails.Provider for Anthropic's Messages API.
+// Provider implements langrails.Provider for Anthropic's Messages API.
 type Provider struct {
 	apiKey  string
 	baseURL string
@@ -56,7 +56,7 @@ func New(apiKey string, opts ...Option) *Provider {
 }
 
 // Complete sends a non-streaming completion request.
-func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest) (*llmrails.CompletionResponse, error) {
+func (p *Provider) Complete(ctx context.Context, req *langrails.CompletionRequest) (*langrails.CompletionResponse, error) {
 	body, err := p.buildRequestBody(req, false)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (p *Provider) Complete(ctx context.Context, req *llmrails.CompletionRequest
 }
 
 // Stream sends a streaming completion request and returns a channel of events.
-func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) (<-chan llmrails.StreamEvent, error) {
+func (p *Provider) Stream(ctx context.Context, req *langrails.CompletionRequest) (<-chan langrails.StreamEvent, error) {
 	body, err := p.buildRequestBody(req, true)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (p *Provider) Stream(ctx context.Context, req *llmrails.CompletionRequest) 
 		return nil, err
 	}
 
-	ch := make(chan llmrails.StreamEvent, 64)
+	ch := make(chan langrails.StreamEvent, 64)
 	go p.readStream(respBody, ch)
 	return ch, nil
 }
@@ -123,7 +123,7 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 			msg = errResp.Error.Message
 		}
 
-		return nil, &llmrails.APIError{
+		return nil, &langrails.APIError{
 			StatusCode: resp.StatusCode,
 			Message:    msg,
 			Provider:   "anthropic",
@@ -133,12 +133,12 @@ func (p *Provider) doRequest(ctx context.Context, body []byte) (io.ReadCloser, e
 	return resp.Body, nil
 }
 
-func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent) {
+func (p *Provider) readStream(body io.ReadCloser, ch chan<- langrails.StreamEvent) {
 	defer close(ch)
 	defer body.Close()
 
 	reader := sse.NewReader(body)
-	var pendingToolCalls []llmrails.ToolCall
+	var pendingToolCalls []langrails.ToolCall
 	var currentToolIndex int = -1
 
 	for {
@@ -156,7 +156,7 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent
 		case "content_block_start":
 			if se.ContentBlock != nil && se.ContentBlock.Type == "tool_use" {
 				currentToolIndex++
-				pendingToolCalls = append(pendingToolCalls, llmrails.ToolCall{
+				pendingToolCalls = append(pendingToolCalls, langrails.ToolCall{
 					ID:   se.ContentBlock.ID,
 					Name: se.ContentBlock.Name,
 				})
@@ -169,8 +169,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent
 			switch se.Delta.Type {
 			case "text_delta":
 				if se.Delta.Text != "" {
-					ch <- llmrails.StreamEvent{
-						Type:    llmrails.EventContent,
+					ch <- langrails.StreamEvent{
+						Type:    langrails.EventContent,
 						Content: se.Delta.Text,
 					}
 				}
@@ -182,8 +182,8 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent
 
 		case "message_delta":
 			if se.Usage != nil {
-				ch <- llmrails.StreamEvent{
-					Usage: &llmrails.TokenUsage{
+				ch <- langrails.StreamEvent{
+					Usage: &langrails.TokenUsage{
 						PromptTokens:     se.Usage.InputTokens,
 						CompletionTokens: se.Usage.OutputTokens,
 						TotalTokens:      se.Usage.InputTokens + se.Usage.OutputTokens,
@@ -193,28 +193,28 @@ func (p *Provider) readStream(body io.ReadCloser, ch chan<- llmrails.StreamEvent
 
 		case "message_stop":
 			for i := range pendingToolCalls {
-				ch <- llmrails.StreamEvent{
-					Type:     llmrails.EventToolCall,
+				ch <- langrails.StreamEvent{
+					Type:     langrails.EventToolCall,
 					ToolCall: &pendingToolCalls[i],
 				}
 			}
-			ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
+			ch <- langrails.StreamEvent{Type: langrails.EventDone}
 			return
 		}
 	}
 
 	if err := reader.Err(); err != nil {
-		ch <- llmrails.StreamEvent{
-			Type:  llmrails.EventError,
+		ch <- langrails.StreamEvent{
+			Type:  langrails.EventError,
 			Error: fmt.Errorf("anthropic: stream read error: %w", err),
 		}
 		return
 	}
 
-	ch <- llmrails.StreamEvent{Type: llmrails.EventDone}
+	ch <- langrails.StreamEvent{Type: langrails.EventDone}
 }
 
-func (p *Provider) buildRequestBody(req *llmrails.CompletionRequest, stream bool) ([]byte, error) {
+func (p *Provider) buildRequestBody(req *langrails.CompletionRequest, stream bool) ([]byte, error) {
 	maxTokens := defaultMaxTokens
 	if req.MaxTokens != nil {
 		maxTokens = *req.MaxTokens
@@ -269,11 +269,11 @@ func (p *Provider) buildRequestBody(req *llmrails.CompletionRequest, stream bool
 	return json.Marshal(r)
 }
 
-func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
-	result := &llmrails.CompletionResponse{
+func (p *Provider) parseResponse(resp *response) *langrails.CompletionResponse {
+	result := &langrails.CompletionResponse{
 		Model:        resp.Model,
 		FinishReason: resp.StopReason,
-		Usage: llmrails.TokenUsage{
+		Usage: langrails.TokenUsage{
 			PromptTokens:     resp.Usage.InputTokens,
 			CompletionTokens: resp.Usage.OutputTokens,
 			TotalTokens:      resp.Usage.InputTokens + resp.Usage.OutputTokens,
@@ -293,7 +293,7 @@ func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
 				result.Content = string(args)
 				continue
 			}
-			result.ToolCalls = append(result.ToolCalls, llmrails.ToolCall{
+			result.ToolCalls = append(result.ToolCalls, langrails.ToolCall{
 				ID:        block.ID,
 				Name:      block.Name,
 				Arguments: string(args),
@@ -304,7 +304,7 @@ func (p *Provider) parseResponse(resp *response) *llmrails.CompletionResponse {
 	return result
 }
 
-func convertMessages(req *llmrails.CompletionRequest) []message {
+func convertMessages(req *langrails.CompletionRequest) []message {
 	var msgs []message
 
 	for _, m := range req.Messages {
@@ -358,7 +358,7 @@ func convertMessages(req *llmrails.CompletionRequest) []message {
 	return msgs
 }
 
-func convertTools(tools []llmrails.ToolDefinition) []tool {
+func convertTools(tools []langrails.ToolDefinition) []tool {
 	result := make([]tool, len(tools))
 	for i, t := range tools {
 		result[i] = tool{

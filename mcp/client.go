@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/promptrails/llmrails"
+	"github.com/promptrails/langrails"
 )
 
 // Client connects to an MCP server and provides tool discovery and execution.
@@ -82,16 +82,16 @@ func NewClient(baseURL string, opts ...Option) (*Client, error) {
 	return c, nil
 }
 
-// ToolDefinitions returns the available tools as llmrails ToolDefinitions,
+// ToolDefinitions returns the available tools as langrails ToolDefinitions,
 // ready to be passed to a CompletionRequest.
-func (c *Client) ToolDefinitions() []llmrails.ToolDefinition {
+func (c *Client) ToolDefinitions() []langrails.ToolDefinition {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	defs := make([]llmrails.ToolDefinition, len(c.tools))
+	defs := make([]langrails.ToolDefinition, len(c.tools))
 	for i, tool := range c.tools {
 		params, _ := json.Marshal(tool.InputSchema)
-		defs[i] = llmrails.ToolDefinition{
+		defs[i] = langrails.ToolDefinition{
 			Name:        tool.Name,
 			Description: tool.Description,
 			Parameters:  params,
@@ -147,7 +147,7 @@ func (c *Client) initialize() error {
 		"protocolVersion": "2025-03-26",
 		"capabilities":    map[string]interface{}{},
 		"clientInfo": map[string]interface{}{
-			"name":    "llmrails",
+			"name":    "langrails",
 			"version": "1.0.0",
 		},
 	})

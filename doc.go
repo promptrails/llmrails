@@ -1,4 +1,4 @@
-// Package llmrails provides a unified interface for interacting with multiple
+// Package langrails provides a unified interface for interacting with multiple
 // LLM (Large Language Model) providers through a single, consistent API.
 //
 // It supports 11+ providers including OpenAI, Anthropic, Google Gemini,
@@ -14,23 +14,23 @@
 // # Quick Start
 //
 //	import (
-//		"github.com/promptrails/llmrails/openai"
+//		"github.com/promptrails/langrails/openai"
 //	)
 //
 //	provider := openai.New("sk-...")
-//	resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
+//	resp, err := provider.Complete(ctx, &langrails.CompletionRequest{
 //		Model:    "gpt-4o",
-//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []langrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 //
 // # Streaming
 //
-//	events, err := provider.Stream(ctx, &llmrails.CompletionRequest{
+//	events, err := provider.Stream(ctx, &langrails.CompletionRequest{
 //		Model:    "gpt-4o",
-//		Messages: []llmrails.Message{{Role: "user", Content: "Hello!"}},
+//		Messages: []langrails.Message{{Role: "user", Content: "Hello!"}},
 //	})
 //	for event := range events {
-//		if event.Type == llmrails.EventContent {
+//		if event.Type == langrails.EventContent {
 //			fmt.Print(event.Content)
 //		}
 //	}
@@ -39,6 +39,6 @@
 //
 // Providers can be wrapped with decorators for retry and fallback behavior:
 //
-//	provider := llmrails.WithRetry(openai.New("sk-..."), 3)
-//	provider = llmrails.WithFallback(provider, anthropic.New("sk-..."))
-package llmrails
+//	provider := langrails.WithRetry(openai.New("sk-..."), 3)
+//	provider = langrails.WithFallback(provider, anthropic.New("sk-..."))
+package langrails

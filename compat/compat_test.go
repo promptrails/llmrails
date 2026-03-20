@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/promptrails/llmrails"
+	"github.com/promptrails/langrails"
 )
 
 func TestProvider_Complete(t *testing.T) {
@@ -51,10 +51,10 @@ func TestProvider_Complete(t *testing.T) {
 		APIKey:  "test-key",
 	})
 
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "gpt-4o",
 		SystemPrompt: "You are helpful.",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -107,10 +107,10 @@ func TestProvider_Complete_WithTools(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
 
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []llmrails.Message{{Role: "user", Content: "What's the weather in Istanbul?"}},
-		Tools: []llmrails.ToolDefinition{{
+		Messages: []langrails.Message{{Role: "user", Content: "What's the weather in Istanbul?"}},
+		Tools: []langrails.ToolDefinition{{
 			Name:        "get_weather",
 			Description: "Get current weather",
 			Parameters:  json.RawMessage(`{"type":"object","properties":{"city":{"type":"string"}}}`),
@@ -146,15 +146,15 @@ func TestProvider_Complete_APIError(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "bad-key"})
 
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err == nil {
 		t.Fatal("expected error")
 	}
 
-	apiErr, ok := err.(*llmrails.APIError)
+	apiErr, ok := err.(*langrails.APIError)
 	if !ok {
 		t.Fatalf("expected APIError, got %T", err)
 	}
@@ -188,9 +188,9 @@ func TestProvider_Stream(t *testing.T) {
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
 
-	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &langrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -200,11 +200,11 @@ func TestProvider_Stream(t *testing.T) {
 	var gotDone bool
 	for event := range ch {
 		switch event.Type {
-		case llmrails.EventContent:
+		case langrails.EventContent:
 			content += event.Content
-		case llmrails.EventDone:
+		case langrails.EventDone:
 			gotDone = true
-		case llmrails.EventError:
+		case langrails.EventError:
 			t.Fatalf("unexpected error event: %v", event.Error)
 		}
 	}
@@ -234,9 +234,9 @@ func TestProvider_ExtraHeaders(t *testing.T) {
 		ExtraHeaders: map[string]string{"X-Custom": "value"},
 	})
 
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "test",
-		Messages: []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Hi"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -260,9 +260,9 @@ func TestProvider_Complete_StructuredOutput(t *testing.T) {
 
 	schema := []byte(`{"type":"object","properties":{"a":{"type":"integer"}}}`)
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
-	resp, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	resp, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:        "test",
-		Messages:     []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages:     []langrails.Message{{Role: "user", Content: "Hi"}},
 		OutputSchema: &schema,
 	})
 	if err != nil {
@@ -298,9 +298,9 @@ func TestProvider_Complete_WithAllParams(t *testing.T) {
 	pp := 0.3
 	seed := 42
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:            "test",
-		Messages:         []llmrails.Message{{Role: "user", Content: "Hi"}},
+		Messages:         []langrails.Message{{Role: "user", Content: "Hi"}},
 		FrequencyPenalty: &fp,
 		PresencePenalty:  &pp,
 		Stop:             []string{"END"},
@@ -324,9 +324,9 @@ func TestProvider_Complete_Reasoning(t *testing.T) {
 	defer server.Close()
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
-	_, err := provider.Complete(context.Background(), &llmrails.CompletionRequest{
+	_, err := provider.Complete(context.Background(), &langrails.CompletionRequest{
 		Model:    "o1",
-		Messages: []llmrails.Message{{Role: "user", Content: "Think"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Think"}},
 		Thinking: true,
 	})
 	if err != nil {
@@ -353,17 +353,17 @@ func TestProvider_Stream_ToolCalls(t *testing.T) {
 	defer server.Close()
 
 	provider := New(Config{Name: "test", BaseURL: server.URL, APIKey: "key"})
-	ch, err := provider.Stream(context.Background(), &llmrails.CompletionRequest{
+	ch, err := provider.Stream(context.Background(), &langrails.CompletionRequest{
 		Model:    "gpt-4o",
-		Messages: []llmrails.Message{{Role: "user", Content: "Weather?"}},
+		Messages: []langrails.Message{{Role: "user", Content: "Weather?"}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	var toolCalls []llmrails.ToolCall
+	var toolCalls []langrails.ToolCall
 	for event := range ch {
-		if event.Type == llmrails.EventToolCall && event.ToolCall != nil {
+		if event.Type == langrails.EventToolCall && event.ToolCall != nil {
 			toolCalls = append(toolCalls, *event.ToolCall)
 		}
 	}

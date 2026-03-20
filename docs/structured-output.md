@@ -24,10 +24,10 @@ schema := []byte(`{
     "required": ["sentiment", "confidence", "summary"]
 }`)
 
-resp, err := provider.Complete(ctx, &llmrails.CompletionRequest{
+resp, err := provider.Complete(ctx, &langrails.CompletionRequest{
     Model:        "gpt-4o",
     SystemPrompt: "Analyze the sentiment of the given text.",
-    Messages:     []llmrails.Message{{Role: "user", Content: "I love this product!"}},
+    Messages:     []langrails.Message{{Role: "user", Content: "I love this product!"}},
     OutputSchema: &schema,
 })
 
