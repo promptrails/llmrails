@@ -1,6 +1,6 @@
 # Providers
 
-langrails supports 11 LLM providers through a unified interface. Each provider is a separate Go package that you import only when needed.
+langrails supports 12 LLM providers through a unified interface. Each provider is a separate Go package that you import only when needed.
 
 ## Provider List
 
@@ -17,6 +17,7 @@ langrails supports 11 LLM providers through a unified interface. Each provider i
 | Together | `langrails/together` | `api.together.xyz` | Bearer token |
 | Mistral | `langrails/mistral` | `api.mistral.ai` | Bearer token |
 | Cohere | `langrails/cohere` | `api.cohere.com` | Bearer token |
+| Ollama | `langrails/ollama` | `localhost:11434` | None (local) |
 
 ## Feature Matrix
 
@@ -29,7 +30,7 @@ langrails supports 11 LLM providers through a unified interface. Each provider i
 | System prompt | message | separate field | systemInstruction | message |
 | Max tokens default | provider default | 4096 (required) | provider default | provider default |
 
-*Compat = DeepSeek, Groq, Fireworks, xAI, OpenRouter, Together, Mistral, Cohere
+*Compat = DeepSeek, Groq, Fireworks, xAI, OpenRouter, Together, Mistral, Cohere, Ollama
 
 ## OpenAI
 
@@ -165,6 +166,22 @@ provider := cohere.New("your-api-key")
 ```
 
 **Models**: command-r-plus, command-r, command-light
+
+## Ollama
+
+```go
+import "github.com/promptrails/langrails/ollama"
+
+provider := ollama.New()
+```
+
+**Models**: llama3.2, mistral, codellama, llava (vision), and any model you pull
+
+**Notes**:
+- No API key required for local instances
+- Default URL: `http://localhost:11434/v1/chat/completions`
+- Custom URL: `ollama.New(ollama.WithBaseURL("http://remote:11434/v1/chat/completions"))`
+- Vision support with llava/bakllava models
 
 ## Custom / Self-Hosted
 
