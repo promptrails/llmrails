@@ -61,3 +61,11 @@ Full docs with search: [promptrails.github.io/langrails](https://promptrails.git
 ## License
 
 MIT — [PromptRails](https://promptrails.com)
+
+## Part of the PromptRails AI Toolkit
+
+- **LangRails** — Unified LLM provider
+- [GuardRails](https://github.com/promptrails/guardrails) — Content safety scanning
+- [MemoryRails](https://github.com/promptrails/memoryrails) — Agent memory
+- [MediaRails](https://github.com/promptrails/mediarails) — AI media generation
+- [Go AI Toolkit](https://github.com/promptrails/go-ai-toolkit) — Demo app
