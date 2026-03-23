@@ -1,6 +1,6 @@
 # Providers
 
-langrails supports 12 LLM providers through a unified interface.
+langrails supports 13 LLM providers through a unified interface.
 
 ## Using the Registry
 
@@ -14,7 +14,7 @@ provider, err := llm.New(llm.OpenAI, "sk-...")
 provider := llm.MustNew(llm.Anthropic, "sk-ant-...")
 ```
 
-Available constants: `llm.OpenAI`, `llm.Anthropic`, `llm.Gemini`, `llm.DeepSeek`, `llm.Groq`, `llm.Fireworks`, `llm.XAI`, `llm.OpenRouter`, `llm.Together`, `llm.Mistral`, `llm.Cohere`, `llm.Ollama`
+Available constants: `llm.OpenAI`, `llm.Anthropic`, `llm.Gemini`, `llm.DeepSeek`, `llm.Groq`, `llm.Fireworks`, `llm.XAI`, `llm.OpenRouter`, `llm.Together`, `llm.Mistral`, `llm.Cohere`, `llm.Perplexity`, `llm.Ollama`
 
 For provider-specific options (custom base URL, HTTP client), use the direct import instead.
 
@@ -33,6 +33,7 @@ For provider-specific options (custom base URL, HTTP client), use the direct imp
 | Together | `langrails/llm/together` | `api.together.xyz` | Bearer token |
 | Mistral | `langrails/llm/mistral` | `api.mistral.ai` | Bearer token |
 | Cohere | `langrails/llm/cohere` | `api.cohere.com` | Bearer token |
+| Perplexity | `langrails/llm/perplexity` | `api.perplexity.ai` | Bearer token |
 | Ollama | `langrails/llm/ollama` | `localhost:11434` | None (local) |
 
 ## Feature Matrix
@@ -46,7 +47,7 @@ For provider-specific options (custom base URL, HTTP client), use the direct imp
 | System prompt | message | separate field | systemInstruction | message |
 | Max tokens default | provider default | 4096 (required) | provider default | provider default |
 
-*Compat = DeepSeek, Groq, Fireworks, xAI, OpenRouter, Together, Mistral, Cohere, Ollama
+*Compat = DeepSeek, Groq, Fireworks, xAI, OpenRouter, Together, Mistral, Cohere, Perplexity, Ollama
 
 ## OpenAI
 
@@ -182,6 +183,21 @@ provider := cohere.New("your-api-key")
 ```
 
 **Models**: command-r-plus, command-r, command-light
+
+## Perplexity
+
+```go
+import "github.com/promptrails/langrails/llm/perplexity"
+
+provider := perplexity.New("your-api-key")
+```
+
+**Models**: sonar-pro, sonar, sonar-deep-research, sonar-reasoning-pro, sonar-reasoning
+
+**Notes**:
+- Search-augmented LLM — responses include web search results
+- Responses may include `citations` in metadata
+- OpenAI-compatible API
 
 ## Ollama
 

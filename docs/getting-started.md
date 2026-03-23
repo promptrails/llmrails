@@ -140,7 +140,7 @@ if err != nil {
 
 - [Streaming](streaming.md) — Real-time token streaming
 - [Tool Calling](tool-calling.md) — Function/tool calling
-- [Providers](providers.md) — All 12 supported providers
+- [Providers](providers.md) — All 13 supported providers
 - [Chain](chain.md) — Sequential prompt pipelines
 - [Graph](graph.md) — Stateful workflow engine
 - [MCP](mcp.md) — Model Context Protocol integration
