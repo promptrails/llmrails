@@ -68,7 +68,7 @@ Full docs with search: [promptrails.github.io/langrails](https://promptrails.git
 
 ## License
 
-MIT — [PromptRails](https://promptrails.com)
+MIT — [PromptRails](https://promptrails.ai)
 
 ## Part of the PromptRails AI Toolkit
 
